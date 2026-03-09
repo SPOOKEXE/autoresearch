@@ -449,6 +449,11 @@ FINAL_LR_FRAC = 0.0     # final LR as fraction of initial
 DEPTH = 8               # number of transformer layers
 DEVICE_BATCH_SIZE = 16  # per-device batch size (reduce if OOM)
 
+# Checkpointing (modern approach: state_dict only; do not use torch.utils.serialization)
+CHECKPOINT_DIR = "checkpoints"
+CHECKPOINT_PATH = os.path.join(CHECKPOINT_DIR, "model_weights.pth")
+RESUME_FROM_CHECKPOINT = True  # if True and checkpoint exists, load weights and continue
+
 # ---------------------------------------------------------------------------
 # Setup: tokenizer, model, optimizer, dataloader
 # ---------------------------------------------------------------------------
@@ -481,7 +486,11 @@ print(f"Model config: {asdict(config)}")
 with torch.device("meta"):
     model = GPT(config)
 model.to_empty(device=device)
-model.init_weights()
+if RESUME_FROM_CHECKPOINT and os.path.isfile(CHECKPOINT_PATH):
+    model.load_state_dict(torch.load(CHECKPOINT_PATH, map_location=device, weights_only=True))
+    print(f"Resumed from {CHECKPOINT_PATH}")
+else:
+    model.init_weights()
 
 param_counts = model.num_scaling_params()
 print("Parameter counts:")
@@ -605,6 +614,11 @@ while True:
 print()  # newline after \r training log
 
 total_tokens = step * TOTAL_BATCH_SIZE
+
+# Save checkpoint (state_dict only; modern PyTorch — do not use torch.utils.serialization)
+os.makedirs(CHECKPOINT_DIR, exist_ok=True)
+torch.save(model.state_dict(), CHECKPOINT_PATH)
+print(f"Checkpoint saved to {CHECKPOINT_PATH}")
 
 # Final eval
 model.eval()
