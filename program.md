@@ -2,6 +2,11 @@
 
 This is an experiment to have the LLM do its own research.
 
+I will provide you some topics and information to investigate, and you see what you want to apply and experiment with.
+
+Review the documents in docs/ and focus on the "sequence representation of information" and a "graph network".
+I want the model to integrate these in a hierarchical latent space that substrates based on context via sequences (e.g. MIT described that models squash everything into their latent space in superposition and could benefit from hierarchy).
+
 ## Setup
 
 To set up a new experiment, work with the user to:
@@ -27,7 +32,7 @@ Each experiment runs on a single GPU. The training script runs for a **fixed tim
 
 **What you CANNOT do:**
 - Modify `prepare.py`. It is read-only. It contains the fixed evaluation, data loading, tokenizer, and training constants (time budget, sequence length, etc).
-- Install new packages or add dependencies. You can only use what's already in `pyproject.toml`.
+- Install new packages or add dependencies. You can only use what's already in `pyproject.toml`. You are required to ask the user if you need new ones, ensure to list them all.
 - Modify the evaluation harness. The `evaluate_bpb` function in `prepare.py` is the ground truth metric.
 
 **The goal is simple: get the lowest val_bpb.** Since the time budget is fixed, you don't need to worry about training time — it's always 5 minutes. Everything is fair game: change the architecture, the optimizer, the hyperparameters, the batch size, the model size. The only constraint is that the code runs without crashing and finishes within the time budget.
