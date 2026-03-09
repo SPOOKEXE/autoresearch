@@ -27,6 +27,7 @@ from prepare import MAX_SEQ_LEN, TIME_BUDGET, Tokenizer, make_dataloader, evalua
 # Chunk-level auxiliary (C must divide MAX_SEQ_LEN)
 CHUNK_SIZE = 16
 CHUNK_AUX_WEIGHT = 0.02
+CHUNK_ADJ_WEIGHT = 0.01  # graph-like: encourage adjacent chunks to be similar (cosine)
 assert MAX_SEQ_LEN % CHUNK_SIZE == 0, "CHUNK_SIZE must divide MAX_SEQ_LEN"
 
 # ---------------------------------------------------------------------------
@@ -299,6 +300,7 @@ class GPT(nn.Module):
 
         # Chunk-level auxiliary: mean-pool last-layer hidden states per chunk, predict next chunk embedding
         chunk_loss = None
+        chunk_adj_loss = None
         if targets is not None:
             B, T, D = x.size()
             num_chunks = T // CHUNK_SIZE
@@ -307,6 +309,9 @@ class GPT(nn.Module):
                 pred_next_chunk = self.chunk_head(chunk_emb[:, :-1])
                 target_next_chunk = chunk_emb[:, 1:]
                 chunk_loss = F.mse_loss(pred_next_chunk.float(), target_next_chunk.float())
+                # Graph-like: adjacent chunks more similar than non-adjacent (cosine between chunk[t], chunk[t+1])
+                cos_sim = F.cosine_similarity(chunk_emb[:, :-1], chunk_emb[:, 1:], dim=-1)  # (B, num_chunks-1)
+                chunk_adj_loss = (1 - cos_sim.float()).mean()
 
         softcap = 15
         logits = self.lm_head(x)
@@ -320,6 +325,8 @@ class GPT(nn.Module):
                 total = lm_loss + aux_weight * aux_loss
                 if chunk_loss is not None:
                     total = total + CHUNK_AUX_WEIGHT * chunk_loss
+                if chunk_adj_loss is not None:
+                    total = total + CHUNK_ADJ_WEIGHT * chunk_adj_loss
                 return total
             return lm_loss
         return logits
