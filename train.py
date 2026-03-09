@@ -10,6 +10,7 @@ os.environ["HF_HUB_DISABLE_PROGRESS_BARS"] = "1"
 
 import gc
 import time
+from collections import defaultdict
 from dataclasses import dataclass, asdict
 
 import torch
@@ -24,11 +25,70 @@ fa3 = get_kernel(repo).flash_attn_interface
 
 from prepare import MAX_SEQ_LEN, TIME_BUDGET, Tokenizer, make_dataloader, evaluate_bpb
 
-# Chunk-level auxiliary (C must divide MAX_SEQ_LEN)
-CHUNK_SIZE = 16
-CHUNK_AUX_WEIGHT = 0.02
-CHUNK_ADJ_WEIGHT = 0.01  # graph-like: encourage adjacent chunks to be similar (cosine)
-assert MAX_SEQ_LEN % CHUNK_SIZE == 0, "CHUNK_SIZE must divide MAX_SEQ_LEN"
+# Graph-based sequence-input memory: chunk input, build similarity graph, merge when 3+ similar, output conditioning
+MEM_CHUNK = 32  # sequence chunk size for memory (each chunk = one "memory" node)
+MEM_SIM_THRESH = 0.35  # cosine threshold above which chunks are connected; 3+ connected => merge
+assert MAX_SEQ_LEN % MEM_CHUNK == 0, "MEM_CHUNK must divide MAX_SEQ_LEN"
+
+# ---------------------------------------------------------------------------
+# Graph-based sequence memory (store sequences, merge 3+ similar, output conditioning)
+# ---------------------------------------------------------------------------
+
+def _union_find_parent(parent, i):
+    if parent[i] != i:
+        parent[i] = _union_find_parent(parent, parent[i])
+    return parent[i]
+
+def _union_find_merge(parent, i, j):
+    pi, pj = _union_find_parent(parent, i), _union_find_parent(parent, j)
+    if pi != pj:
+        parent[pi] = pj
+
+@torch.compiler.disable
+def graph_memory_forward(x, chunk_size, sim_thresh):
+    """
+    x: (B, T, D). Chunk into sequence memories, build graph, merge 3+ similar, query → (B, D).
+    Runs eager (no compile) to allow Python control flow and .item() in union-find.
+    """
+    B, T, D = x.shape
+    N = T // chunk_size
+    # Chunk and mean-pool: (B, N, D)
+    chunks = x.view(B, N, chunk_size, D).mean(dim=2)
+    chunks_f = chunks.float()
+    # Cosine similarity (B, N, N)
+    norms = F.normalize(chunks_f, p=2, dim=-1)
+    sim = torch.bmm(norms, norms.transpose(1, 2))
+    # Per batch: find connected components, merge 3+
+    device = x.device
+    cond_list = []
+    for b in range(B):
+        adj = (sim[b] >= sim_thresh).cpu()
+        parent = list(range(N))
+        for i in range(N):
+            for j in range(i + 1, N):
+                if adj[i, j].item():
+                    _union_find_merge(parent, i, j)
+        # Group by root
+        comps = defaultdict(list)
+        for i in range(N):
+            comps[_union_find_parent(parent, i)].append(i)
+        slots = []
+        for root, indices in comps.items():
+            if len(indices) >= 3:
+                slots.append(chunks_f[b, indices].mean(dim=0))
+            else:
+                for i in indices:
+                    slots.append(chunks_f[b, i])
+        if not slots:
+            cond_list.append(chunks_f[b].mean(dim=0))
+            continue
+        slots_t = torch.stack(slots, dim=0).to(device)
+        q = chunks_f[b].mean(dim=0, keepdim=True).to(device)
+        scores = F.softmax(q @ slots_t.t(), dim=-1)
+        out = (scores @ slots_t).squeeze(0)
+        cond_list.append(out)
+    cond = torch.stack(cond_list, dim=0)
+    return cond.to(x.dtype)
 
 # ---------------------------------------------------------------------------
 # GPT Model
@@ -136,8 +196,7 @@ class GPT(nn.Module):
             "h": nn.ModuleList([Block(config, i) for i in range(config.n_layer)]),
         })
         self.lm_head = nn.Linear(config.n_embd, config.vocab_size, bias=False)
-        self.next_head = nn.Linear(config.n_embd, config.n_embd, bias=False)  # h[t] -> predicted h[t+1]
-        self.chunk_head = nn.Linear(config.n_embd, config.n_embd, bias=False)  # chunk_emb[c] -> predicted chunk_emb[c+1]
+        self.memory_scale = nn.Parameter(torch.zeros(1))  # gate for graph-memory conditioning (init 0 = no effect)
         self.resid_lambdas = nn.Parameter(torch.ones(config.n_layer))
         self.x0_lambdas = nn.Parameter(torch.zeros(config.n_layer))
         # Value embeddings
@@ -158,8 +217,7 @@ class GPT(nn.Module):
         # Embedding and unembedding
         torch.nn.init.normal_(self.transformer.wte.weight, mean=0.0, std=1.0)
         torch.nn.init.normal_(self.lm_head.weight, mean=0.0, std=0.001)
-        torch.nn.init.normal_(self.next_head.weight, mean=0.0, std=0.001)
-        torch.nn.init.normal_(self.chunk_head.weight, mean=0.0, std=0.001)
+        # memory_scale already zeros
         # Transformer blocks
         n_embd = self.config.n_embd
         s = 3**0.5 * n_embd**-0.5
@@ -234,14 +292,13 @@ class GPT(nn.Module):
         wte = sum(p.numel() for p in self.transformer.wte.parameters())
         value_embeds = sum(p.numel() for p in self.value_embeds.parameters())
         lm_head = sum(p.numel() for p in self.lm_head.parameters())
-        next_head = sum(p.numel() for p in self.next_head.parameters())
-        chunk_head = sum(p.numel() for p in self.chunk_head.parameters())
+        memory_params = self.memory_scale.numel()
         transformer_matrices = sum(p.numel() for p in self.transformer.h.parameters())
         scalars = self.resid_lambdas.numel() + self.x0_lambdas.numel()
-        total = wte + value_embeds + lm_head + next_head + chunk_head + transformer_matrices + scalars
+        total = wte + value_embeds + lm_head + memory_params + transformer_matrices + scalars
         return {
-            'wte': wte, 'value_embeds': value_embeds, 'lm_head': lm_head, 'next_head': next_head,
-            'chunk_head': chunk_head, 'transformer_matrices': transformer_matrices, 'scalars': scalars, 'total': total,
+            'wte': wte, 'value_embeds': value_embeds, 'lm_head': lm_head, 'memory': memory_params,
+            'transformer_matrices': transformer_matrices, 'scalars': scalars, 'total': total,
         }
 
     def setup_optimizer(self, unembedding_lr=0.004, embedding_lr=0.2, matrix_lr=0.02,
@@ -251,17 +308,17 @@ class GPT(nn.Module):
         value_embeds_params = list(self.value_embeds.parameters())
         embedding_params = list(self.transformer.wte.parameters())
         lm_head_params = list(self.lm_head.parameters())
-        next_head_params = list(self.next_head.parameters()) + list(self.chunk_head.parameters())
+        memory_params = [self.memory_scale]
         resid_params = [self.resid_lambdas]
         x0_params = [self.x0_lambdas]
         assert len(list(self.parameters())) == (len(matrix_params) + len(embedding_params) +
-            len(lm_head_params) + len(next_head_params) + len(value_embeds_params) + len(resid_params) + len(x0_params))
+            len(lm_head_params) + len(memory_params) + len(value_embeds_params) + len(resid_params) + len(x0_params))
         # Scale LR ∝ 1/√dmodel (tuned at 768 dim)
         dmodel_lr_scale = (model_dim / 768) ** -0.5
         print(f"Scaling AdamW LRs by 1/sqrt({model_dim}/768) = {dmodel_lr_scale:.6f}")
         param_groups = [
             dict(kind='adamw', params=lm_head_params, lr=unembedding_lr * dmodel_lr_scale, betas=adam_betas, eps=1e-10, weight_decay=0.0),
-            dict(kind='adamw', params=next_head_params, lr=unembedding_lr * dmodel_lr_scale, betas=adam_betas, eps=1e-10, weight_decay=0.0),
+            dict(kind='adamw', params=memory_params, lr=scalar_lr * 0.1, betas=adam_betas, eps=1e-10, weight_decay=0.0),
             dict(kind='adamw', params=embedding_params, lr=embedding_lr * dmodel_lr_scale, betas=adam_betas, eps=1e-10, weight_decay=0.0),
             dict(kind='adamw', params=value_embeds_params, lr=embedding_lr * dmodel_lr_scale, betas=adam_betas, eps=1e-10, weight_decay=0.0),
             dict(kind='adamw', params=resid_params, lr=scalar_lr * 0.01, betas=adam_betas, eps=1e-10, weight_decay=0.0),
@@ -285,6 +342,9 @@ class GPT(nn.Module):
 
         x = self.transformer.wte(idx)
         x = norm(x)
+        # Graph-based sequence memory: input → chunk, graph, merge 3+ similar → conditioning (or nothing)
+        memory_cond = graph_memory_forward(x, MEM_CHUNK, MEM_SIM_THRESH)
+        x = x + (self.memory_scale * memory_cond).unsqueeze(1)
         x0 = x
         for i, block in enumerate(self.transformer.h):
             x = self.resid_lambdas[i] * x + self.x0_lambdas[i] * x0
@@ -292,43 +352,14 @@ class GPT(nn.Module):
             x = block(x, ve, cos_sin, self.window_sizes[i])
         x = norm(x)
 
-        # Auxiliary: predict next latent state h[t+1] from h[t]
-        aux_weight = 0.05
-        pred_next = self.next_head(x[:, :-1])
-        target_next = x[:, 1:]
-        aux_loss = F.mse_loss(pred_next.float(), target_next.float())
-
-        # Chunk-level auxiliary: mean-pool last-layer hidden states per chunk, predict next chunk embedding
-        chunk_loss = None
-        chunk_adj_loss = None
-        if targets is not None:
-            B, T, D = x.size()
-            num_chunks = T // CHUNK_SIZE
-            if num_chunks >= 2:
-                chunk_emb = x.view(B, num_chunks, CHUNK_SIZE, D).mean(dim=2)  # (B, num_chunks, n_embd)
-                pred_next_chunk = self.chunk_head(chunk_emb[:, :-1])
-                target_next_chunk = chunk_emb[:, 1:]
-                chunk_loss = F.mse_loss(pred_next_chunk.float(), target_next_chunk.float())
-                # Graph-like: adjacent chunks more similar than non-adjacent (cosine between chunk[t], chunk[t+1])
-                cos_sim = F.cosine_similarity(chunk_emb[:, :-1], chunk_emb[:, 1:], dim=-1)  # (B, num_chunks-1)
-                chunk_adj_loss = (1 - cos_sim.float()).mean()
-
         softcap = 15
         logits = self.lm_head(x)
         logits = logits.float()
         logits = softcap * torch.tanh(logits / softcap)
 
         if targets is not None:
-            lm_loss = F.cross_entropy(logits.view(-1, logits.size(-1)), targets.view(-1),
-                                     ignore_index=-1, reduction=reduction)
-            if reduction == 'mean':
-                total = lm_loss + aux_weight * aux_loss
-                if chunk_loss is not None:
-                    total = total + CHUNK_AUX_WEIGHT * chunk_loss
-                if chunk_adj_loss is not None:
-                    total = total + CHUNK_ADJ_WEIGHT * chunk_adj_loss
-                return total
-            return lm_loss
+            return F.cross_entropy(logits.view(-1, logits.size(-1)), targets.view(-1),
+                                 ignore_index=-1, reduction=reduction)
         return logits
 
 # ---------------------------------------------------------------------------
