@@ -24,3 +24,5 @@ results.tsv
 
 # Checkpoints (model weights)
 checkpoints/
+
+.cache
