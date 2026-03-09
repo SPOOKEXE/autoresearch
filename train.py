@@ -24,6 +24,11 @@ fa3 = get_kernel(repo).flash_attn_interface
 
 from prepare import MAX_SEQ_LEN, TIME_BUDGET, Tokenizer, make_dataloader, evaluate_bpb
 
+# Chunk-level auxiliary (C must divide MAX_SEQ_LEN)
+CHUNK_SIZE = 16
+CHUNK_AUX_WEIGHT = 0.02
+assert MAX_SEQ_LEN % CHUNK_SIZE == 0, "CHUNK_SIZE must divide MAX_SEQ_LEN"
+
 # ---------------------------------------------------------------------------
 # GPT Model
 # ---------------------------------------------------------------------------
@@ -131,6 +136,7 @@ class GPT(nn.Module):
         })
         self.lm_head = nn.Linear(config.n_embd, config.vocab_size, bias=False)
         self.next_head = nn.Linear(config.n_embd, config.n_embd, bias=False)  # h[t] -> predicted h[t+1]
+        self.chunk_head = nn.Linear(config.n_embd, config.n_embd, bias=False)  # chunk_emb[c] -> predicted chunk_emb[c+1]
         self.resid_lambdas = nn.Parameter(torch.ones(config.n_layer))
         self.x0_lambdas = nn.Parameter(torch.zeros(config.n_layer))
         # Value embeddings
@@ -152,6 +158,7 @@ class GPT(nn.Module):
         torch.nn.init.normal_(self.transformer.wte.weight, mean=0.0, std=1.0)
         torch.nn.init.normal_(self.lm_head.weight, mean=0.0, std=0.001)
         torch.nn.init.normal_(self.next_head.weight, mean=0.0, std=0.001)
+        torch.nn.init.normal_(self.chunk_head.weight, mean=0.0, std=0.001)
         # Transformer blocks
         n_embd = self.config.n_embd
         s = 3**0.5 * n_embd**-0.5
@@ -227,12 +234,13 @@ class GPT(nn.Module):
         value_embeds = sum(p.numel() for p in self.value_embeds.parameters())
         lm_head = sum(p.numel() for p in self.lm_head.parameters())
         next_head = sum(p.numel() for p in self.next_head.parameters())
+        chunk_head = sum(p.numel() for p in self.chunk_head.parameters())
         transformer_matrices = sum(p.numel() for p in self.transformer.h.parameters())
         scalars = self.resid_lambdas.numel() + self.x0_lambdas.numel()
-        total = wte + value_embeds + lm_head + next_head + transformer_matrices + scalars
+        total = wte + value_embeds + lm_head + next_head + chunk_head + transformer_matrices + scalars
         return {
             'wte': wte, 'value_embeds': value_embeds, 'lm_head': lm_head, 'next_head': next_head,
-            'transformer_matrices': transformer_matrices, 'scalars': scalars, 'total': total,
+            'chunk_head': chunk_head, 'transformer_matrices': transformer_matrices, 'scalars': scalars, 'total': total,
         }
 
     def setup_optimizer(self, unembedding_lr=0.004, embedding_lr=0.2, matrix_lr=0.02,
@@ -242,7 +250,7 @@ class GPT(nn.Module):
         value_embeds_params = list(self.value_embeds.parameters())
         embedding_params = list(self.transformer.wte.parameters())
         lm_head_params = list(self.lm_head.parameters())
-        next_head_params = list(self.next_head.parameters())
+        next_head_params = list(self.next_head.parameters()) + list(self.chunk_head.parameters())
         resid_params = [self.resid_lambdas]
         x0_params = [self.x0_lambdas]
         assert len(list(self.parameters())) == (len(matrix_params) + len(embedding_params) +
@@ -289,6 +297,17 @@ class GPT(nn.Module):
         target_next = x[:, 1:]
         aux_loss = F.mse_loss(pred_next.float(), target_next.float())
 
+        # Chunk-level auxiliary: mean-pool last-layer hidden states per chunk, predict next chunk embedding
+        chunk_loss = None
+        if targets is not None:
+            B, T, D = x.size()
+            num_chunks = T // CHUNK_SIZE
+            if num_chunks >= 2:
+                chunk_emb = x.view(B, num_chunks, CHUNK_SIZE, D).mean(dim=2)  # (B, num_chunks, n_embd)
+                pred_next_chunk = self.chunk_head(chunk_emb[:, :-1])
+                target_next_chunk = chunk_emb[:, 1:]
+                chunk_loss = F.mse_loss(pred_next_chunk.float(), target_next_chunk.float())
+
         softcap = 15
         logits = self.lm_head(x)
         logits = logits.float()
@@ -298,7 +317,10 @@ class GPT(nn.Module):
             lm_loss = F.cross_entropy(logits.view(-1, logits.size(-1)), targets.view(-1),
                                      ignore_index=-1, reduction=reduction)
             if reduction == 'mean':
-                return lm_loss + aux_weight * aux_loss
+                total = lm_loss + aux_weight * aux_loss
+                if chunk_loss is not None:
+                    total = total + CHUNK_AUX_WEIGHT * chunk_loss
+                return total
             return lm_loss
         return logits
 
