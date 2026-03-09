@@ -48,27 +48,25 @@ def _union_find_merge(parent, i, j):
 def graph_memory_forward(x, chunk_size, sim_thresh):
     """
     x: (B, T, D). Chunk into sequence memories, build graph, merge 3+ similar, query → (B, D).
-    Runs eager (no compile) to allow Python control flow and .item() in union-find.
+    Runs eager (no compile) to allow Python control flow in union-find.
     """
     B, T, D = x.shape
     N = T // chunk_size
     # Chunk and mean-pool: (B, N, D)
     chunks = x.view(B, N, chunk_size, D).mean(dim=2)
     chunks_f = chunks.float()
-    # Cosine similarity (B, N, N)
+    # Cosine similarity (B, N, N) — single matmul, no per-element .item()
     norms = F.normalize(chunks_f, p=2, dim=-1)
     sim = torch.bmm(norms, norms.transpose(1, 2))
-    # Per batch: find connected components, merge 3+
-    device = x.device
+    # One .cpu().numpy() per batch elem for fast adjacency checks in union-find
     cond_list = []
     for b in range(B):
-        adj = (sim[b] >= sim_thresh).cpu()
+        adj_np = (sim[b] >= sim_thresh).cpu().numpy()
         parent = list(range(N))
         for i in range(N):
             for j in range(i + 1, N):
-                if adj[i, j].item():
+                if adj_np[i, j]:
                     _union_find_merge(parent, i, j)
-        # Group by root
         comps = defaultdict(list)
         for i in range(N):
             comps[_union_find_parent(parent, i)].append(i)
@@ -82,8 +80,8 @@ def graph_memory_forward(x, chunk_size, sim_thresh):
         if not slots:
             cond_list.append(chunks_f[b].mean(dim=0))
             continue
-        slots_t = torch.stack(slots, dim=0).to(device)
-        q = chunks_f[b].mean(dim=0, keepdim=True).to(device)
+        slots_t = torch.stack(slots, dim=0)
+        q = chunks_f[b].mean(dim=0, keepdim=True)
         scores = F.softmax(q @ slots_t.t(), dim=-1)
         out = (scores @ slots_t).squeeze(0)
         cond_list.append(out)
