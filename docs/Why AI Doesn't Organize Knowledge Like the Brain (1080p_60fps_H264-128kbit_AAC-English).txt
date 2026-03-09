@@ -1,0 +1,369 @@
+What are the most basic units of knowledge?
+Most people would say facts, or maybe concepts or ideas, something clean and self-contained
+like Fido is a dog and 2 plus 2 equals 4.
+It feels like the brain stores these as little independent objects like files and folders
+neatly labeled and waiting to be retrieved.
+But that intuition is incomplete.
+The brain doesn't store just facts.
+It stores thoughts in sequences.
+I'll show you that the brain's usefulness requires handling sequences of information,
+and I'll show you a biologically plausible way your brain could do it.
+I'm Charles Simon, long-time AI researcher, software developer, and manager.
+Beyond AI, I've developed software for neurological test instruments and neural simulators.
+I created the Future AI Society to explore how neuroscience can inform smarter, more human-like
+AI.
+A lot of effort has gone into our open source brain simulator projects, which I'll be using
+throughout these videos for simulations and demonstrations.
+Let me make a simple statement.
+Fido is a dog.
+So now you know.
+But you didn't learn it in a vacuum.
+You heard it after something else.
+When I say that Fifi is a cat, you also know I told you that after I said that Fido is a dog.
+Facts are embedded in sequences of experiences.
+Your brain does not receive bullet points.
+It receives a flow of sensation, language, movement, and thought.
+One moment leading to the next.
+And if information always arrives as a flow, then memory cannot be a collection of disconnected
+entries.
+It must preserve that structure.
+It must preserve order.
+This leads to a deeper claim.
+Virtually all information in the brain is stored and can be accessed as sequences.
+Not just language.
+Not just music.
+Not just movement.
+Sequences.
+If we want to understand how memory truly works or how to build brain-like intelligence,
+we have to start with that premise.
+The brain doesn't think in isolated facts.
+It thinks in sequences.
+As another example, speaking seems effortless.
+But it is one of the most demanding things the brain does, and it takes children years
+to learn to be good at it.
+To produce even a short sentence, your brain must activate phonemes in a precise order, each
+of which requires the precise coordinated contraction of perhaps hundreds of muscles.
+Those phonemes form syllables.
+Syllables form words.
+Words form phrases.
+Phrases form complete thoughts.
+Every level depends on ordered structure.
+Neurons, however, are slow.
+They fire on the order of milliseconds.
+Signals must travel across synapses.
+And there is no high-speed clock, no central processor, no indexed memory address where the
+brain can instantly fetch the next sound.
+If the brain had to complete every phoneme from scratch, determining articulation, timing,
+and sequence position anew each time, speech would be far too slow and far too fragile.
+Consider it like a one-year-old trying to talk.
+Instead, the brain learns to pre-store sequences.
+When you say a familiar word, you are not assembling it sound-by-sound through fresh computation.
+You are activating an already-learned chain.
+That chain fires in order because its structure was built in advance.
+The ordering is embedded in the connectivity.
+Subsequences make this system efficient.
+The ending ology is reused in neurology, biology, psychology, and geology.
+The brain does not store each of these words as completely independent constructions.
+It stores reusable parts.
+Those parts can be linked into larger sequences when needed.
+This reuse is not a convenience.
+It's a requirement.
+Without subsequences, every word would require a completely separate chain.
+The storage would explode and learning would be painfully slow.
+With subsequences, the brain compresses information and accelerates processing.
+The same principle applies to phrases and commonly used expressions.
+Familiar sequences can be triggered as units, allowing fluent speech and rapid comprehension.
+What feels like instantaneous thought is actually the rapid traversal of pre-built sequential structures.
+Given slow biological components, the only way to achieve real-time language and cognition
+is through stored sequences and reusable subsequences.
+Without them, the brain simply could not operate at the speed it does.
+How can this work in the brain?
+It's nothing like a computer.
+Modern computers rely on addresses.
+Every piece of data lives at a specific numeric location.
+If the processor needs something, it jumps directly to that address.
+And even more importantly, this numerical addressing forces the concept of next to be imposed on all
+information.
+CPUs can always access the next item in memory because the numerical addresses impose the order.
+The brain has nothing like this.
+There is no master index of neurons, no global numbering system.
+Without sequential addresses, the brain cannot retrieve information by position.
+It cannot say, give me the fifth phoneme or jump to the next item in memory.
+It must move from one element to the next by following physical synaptic connections.
+This constraint changes everything.
+Order cannot be stored as a number.
+It must be stored as a structure.
+The only way to represent sequences is through linked connectivity.
+One element activating the next.
+If A comes before B, there must be a path from A to B.
+If a sequence continues, that continuation must exist as a chain of links.
+In other words, the brain must use linked structures, not indexed arrays.
+Traversal replaces lookup.
+Propagation replaces jumping.
+The flow of activation itself becomes the mechanism of order.
+And once you accept that, sequences are no longer optional.
+They are inevitable.
+Let's make this concrete by looking at something simple, the spelling of the word cat.
+At first glance, it seems trivial.
+C-A-T.
+Three letters.
+But the brain has no sequential addresses and no index memory.
+So it cannot store this as position 1 is C, position 2 is A, position 3 is T.
+There is no array slot to hold each letter.
+Instead, the word must be represented as a sequence structure.
+This will be obvious if you've taken a computer science course which included linked lists,
+but here I'll explain the specifics of how this must work in the brain to explain what
+you can observe for yourself.
+Consider a thought representing the word cat.
+The word, not the animal.
+The word cat.
+Cat thought must link to a sequence structure that defines its spelling.
+The spelling is not stored inside the word itself.
+It is stored as an ordered chain of sequence elements.
+The sequence begins with a first element.
+Let's call it CatSequence0.
+The element links to the value C, which itself is a thought representing the letter C.
+including how to pronounce it, how to write it, how to alphabetize it, and everything else
+associated with that letter.
+The thought CatSequence0 then links to the next sequence element, CatSequence1, with a
+link labeled Next.
+CatSequence1 value links to the letter A, and also to the next element, CatSequence2.
+CatSequence2 links to the letter C, and each sequence element knows two things, what value
+it represents, and what comes next.
+This is not optional design.
+It is forced by biology.
+Because the brain cannot say, give me the next letter, it must move from the first element
+to the next by following synaptic links.
+Order exists only because there is a connection from one element to the next.
+Traversal creates the sequence.
+Notice something else.
+The letters themselves are independent thoughts.
+The C in Cat is the same C used in car or city.
+The letter Seathought contains its pronunciation, the writing form, the alphabetical position,
+and the visual information you need to be able to recognize it.
+The sequence elements simply value links to that letter.
+This separation is critical.
+The sequence defines order, and the values define the meaning.
+And because the sequence is a linked structure, sub-sequences can be reused elsewhere.
+The spelling of Cat, therefore, reveals a general principle.
+The brain must represent ordered information as linked sequence elements, each pointing to
+a value and to the next element.
+Without indexed memory, this is the only way to preserve order.
+Even a three-letter word proves the rule.
+Order is structure, not position.
+In fact, there is no requirement that the sequence elements be stored in a
+adjacent neurons in the brain.
+They are likely nearby because longer connections are costly, taking up space and taking more
+time.
+But this structure allows us to build sequences of completely unrelated events.
+There is one more structural requirement.
+Our brains do not process sequences efficiently in reverse.
+Try spelling a word backwards.
+Try reciting a phone number backwards.
+This limitation means that if activation starts in the middle of a stored sequence, the system
+must have a structural way to identify the beginning of that sequence.
+That's the role of the first link.
+It allows an immediate jump to the start of any sequence, enabling a phrase-level matching.
+So if you hear, little lamb, you can know it's part of the phrase, Mary had a little lamb.
+Now let's expand the example.
+Consider the words cat and cats.
+At first glance, they look similar, but the similarity is not accidental, and the brain
+cannot afford to store each word as an entirely separate structure.
+If the brain used isolated chains for every word, then cat would be one sequence, cats would
+be another unrelated sequence, and scat would be yet another.
+That would mean duplicating the CAT structure multiple times.
+Biologically, that would be wasteful and inefficient.
+Instead, the brain reuses sub-sequences.
+Start with cat.
+As we discussed, this is represented by the linked chain C-A-T.
+Each element points to a letter thought and to the next sequence element.
+Now consider cats.
+The first three letters are identical.
+There is no reason to rebuild the C-A-T from scratch.
+Instead, the new first sequence element just value links to that existing sequence.
+Then we only need a second sequence element to add that final S value link.
+In other words, cats is not an entirely new spelling.
+It is cat plus an extension.
+What this means is that the spelling of words forms a graph, not a list of isolated strings.
+Shared sub-sequences are physically shared structures.
+This dramatically reduces storage, and it also accelerates search.
+The sequence reuse only works if the brain can find existing sequences quickly.
+The system must be able to discover in real-time every sequence that contains a particular element.
+The key is that value links are not just forward.
+They can also be followed in reverse, even though this requires multiple neurons and synapses.
+If we start with the letter thought C, we can follow its incoming value links to find every
+sequence element that uses C as its initial value.
+From there, we can follow those elements upward to the word thoughts they belong to.
+In effect, by activating C, we immediately activate every word sequence that contains a C.
+While you might think this is a cumbersome approach, remember that the brain is working in parallel.
+If you activate C and it sends neural spikes to ten containing sequences, or a thousand, it's no big deal.
+As you add more letters to match, the number of activated words reduces very rapidly.
+But we can go further. Each sequence element also knows whether it is the first element in its chain.
+So, from the activated set, we can determine which words actually begin with C.
+That distinction is structural, not computed by scanning.
+Now remember, this is happening in neurons.
+If the C thought fires, all connected sequence elements that depend on C can begin firing simultaneously.
+All candidate words that start with C become active in parallel.
+There is no loop over a dictionary.
+There is no serial comparison.
+Now fire A.
+Now only those sequence elements that represent an A following an active C will continue to
+be activated.
+Words that do not match the partial sequence naturally drop out.
+The activation simply does not propagate there.
+With each additional letter, T or S or any other, the field narrows automatically.
+The system does not search by checking words one at a time.
+It searches by propagating activations through all shared subsequences.
+Incorrect paths fade.
+Matching paths remain active.
+The process I've described is how slow neurons can support fast recognition.
+The speed comes from parallel activation and structural reuse, not high frequency computation.
+Search is not lookup, search is flow.
+I'm going to give three demonstrations of sequences showing their breadth of usefulness.
+Representing the spellings of words.
+Tracking the order of experiences or events.
+And saving and recalling the sequences of notes in a musical tune.
+I'll be using the open source software from the Brainsim Thought project on GitHub, and
+I encourage you to try it out and contribute suggestions and enhancements.
+This is not just demo-ware, but represents the potential of software which handles real-time
+information in a brain-like way, storing thoughts and links between them.
+I'll start by adding the fact that cat is spelled C-A-T.
+In this user interface, sequences are denoted by little up arrows.
+When we look at the content, it simply shows that the word cat is represented by the sequence
+cat, which isn't particularly interesting.
+But if I expand the sequence, you can see the internal structure.
+The sequence consists of sequence elements which are connected by links labeled NXT.
+In the first sequence element, you can see the FRST link which points to itself.
+It's a bit redundant, but makes evaluating sequences more consistent.
+And it has the value link pointing to the first letter C.
+And I can expand the next link to show the next element in the sequence.
+It has the value pointing to A.
+And I can expand again to see the full sequence with the final letter pointing to T.
+Note that the last element in the sequence has no next link.
+Now if we go to the search box and put in the sequence C-A-T, the system will find the word
+cat with a very high confidence.
+But if I put in just C-A or A-T, the system will also find the word cat, but notice the
+lower confidence values.
+For the A-T search, when we initially find the combination in our collection of sequences,
+we need to work our way back to the beginning of the sequence in order for it to be useful.
+That's where the first link comes in.
+From every sequence element, the first links indicate the beginning of the sequence.
+Now I'll put in the fact that cats is spelled C-A-T-S.
+Again, this becomes interesting when we look under the hood.
+Although cats is a four letter word, it takes only two sequence elements to represent it.
+The first has a value of the C-A-T sub-sequence, while the second has the value of the single
+S character.
+You can see the beginning of the huge data compression which is enabled by the brain's
+use of sequences, which include sub-sequences.
+Obviously, to do this, the brain must start the creation of every new sequence by searching
+for existing useful sub-sequences.
+This touches on the overall human learning process, where the first step in learning anything
+is always to verify whether or not you already know it.
+I'd like to emphasize that there is no special case here for words or letters.
+It's just sequences and sub-sequences.
+The process emerges from the same structural rules needed to store and follow all types of
+sequences.
+Although I'm still exploring how your brain might learn these new sequences, you can see
+that this is not a dictionary lookup.
+It is a structural propagation through a shared graph.
+We fire the nodes we can recognize and the sequences with the greatest resulting activation wins.
+Stay tuned for forthcoming videos for updates on the learning process.
+In this second demonstration, I'm showing how the same sequence structure can be harnessed
+to keep track of the order of events experienced in the real world.
+Here I'll add just a few facts.
+FIDO goes outside, then FIDO plays fetch, then FIDO goes inside.
+While these are somewhat isolated facts as they are encountered, the system and your brain
+is building a sequence of events as they happen.
+Notice that the most recent events are added at the beginning of the sequence, which seems
+reasonable.
+While a computer could do this any number of ways, your brain has no choice but to build
+a sequence of virtually all events and subsequently prune away the ones which turn out to be unimportant.
+The reason?
+At the time your brain encounters an event, you often do not know whether or not it's important.
+By storing everything and then pruning away the irrelevant, your brain can learn without
+being told explicitly what the facts are, what the causes and effects are, and what events
+naturally follow which others.
+This is completely different from the way today's AI learning processes work and is one of the
+most important observations we can glean from building out a brain-like system.
+The same sequence mechanism that spells words can also represent melodies.
+In this demonstration, I've pre-coded a few fundamental thoughts and tied them to musical notes.
+If I fire a specific thought, the musical note will sound.
+I've also pre-built a few sequences to represent phrases.
+For example, the three blind mice phrase is a sequence that plays three's three notes.
+TBL2 has two references to the three blind mice phrase and so plays it twice.
+Next, see how they run.
+And similarly, a phrase that plays it twice.
+And third, they all ran after.
+This phrase is included three times.
+Finally, there is one phrase to rule them all.
+It references TBL2, then SHRT2, then TARA3, and finally, once again, three blind mice.
+But just as in searching for words, I can play a few notes and the system will respond with
+the phrase that includes those notes.
+If I play E D, the system will play the basic three blind mice phrase because it is the simplest
+phrase containing those two notes.
+If I play G F, it will play the see how they run phrase.
+This is the same process we used for letters.
+Language and music are handled by identical structural machinery.
+This behavior is emergent from the linked structure itself.
+There is no search loop over stored items.
+There is only activation flowing through connections.
+If sequences and subsequences are the only biologically viable way to represent ordered information, then
+this has profound implications for artificial intelligence.
+Most modern AI systems do not store knowledge as explicit linked sequences.
+They store vectors, embeddings, weight matrices, and statistical associations.
+These systems can produce impressive results, but they do not structurally represent order in
+the way the brain must.
+In the brain, order is not metadata.
+It is not a tag attached to a fact.
+It is embedded in connectivity.
+What comes next is determined by physical links, meaning emerges from structure.
+If we want to build AI systems that operate in real time, learn incrementally, and reuse
+knowledge efficiently the way the human brain does, we cannot ignore this constraint.
+A brain-like system must support reusable subsequences.
+It must allow activation to propagate in parallel, and it must represent order structurally rather
+than numerically.
+The demonstrations you've seen are not animations.
+They are running software built around a single atomic data structure, the thought, and
+the links and sequences that connect thoughts together.
+From spelling to events to music, the same mechanism operates everywhere.
+This suggests something powerful.
+Intelligence may not require dozens of specialized memory systems.
+It may require one fundamental mechanism, structured sequences with reusable subsequences applied
+universally.
+If that is true, then much of cognitive complexity reduces to graph traversal.
+Not magic.
+Not quantum collapse.
+Not thousands of independent models.
+Just structure.
+Let's return to the beginning.
+We started by asking, what is the most basic unit of knowledge?
+A fact?
+A concept?
+An idea?
+But facts are embedded in context.
+Context unfolds in time.
+Time produces order.
+And order must be represented structurally in the brain with no sequential addresses.
+From speech to spelling to lived experience to music, we see the same pattern repeated.
+Ordered information is represented as linked sequences.
+Shared structure creates compression and reverse links enable rapid search.
+Visual activation enables speed despite slow neurons.
+The brain does not retrieve entries from a table.
+It propagates activation through structure.
+Sequences are not a feature of cognition.
+They are the foundation.
+If we want to understand how the brain works, or build systems that approach its flexibility,
+we must stop thinking in terms of stored facts and start thinking in terms of structured
+flow.
+The brain does not think in isolated pieces of information.
+It thinks in sequences.
+Everything I've shown you follows from two biological constraints.
+First, neurons are slow.
+And second, the brain has no indexed memory.
+Given these two facts, the rest is inevitable.
+If you like this kind of content, be sure to like and subscribe and hit the notification bell.
+The YouTube algorithm isn't particularly supportive of unique content like this, so you are unlikely
+to be offered future videos unless you have requested notifications.
+Also, you can join the Future AI Society for free to participate in our online conversations
+about this content.
+And as always, thanks for watching.

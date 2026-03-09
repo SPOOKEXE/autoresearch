@@ -1,0 +1,101 @@
+Hebbian synapses using synapses to represent knowledge and representing knowledge as relationships
+this video builds on several previous videos which converted neuron firing rates to values
+and then learn to recognize different patterns of inputs this video will extend these concepts to
+create knowledge knowledge is often represented in a graph structure which consists of nodes
+connected by edges in this simple graph we can see that spock was played by leonard de mouy who
+starred in star trek well it's obvious that some sort of graph like structure is implemented in
+the brain because you and i can answer the same types of questions that can be answered from
+this graph structure on the other hand there are a few significant differences
+neurons and synapses can't contain information they just spike in a computer we can attach text to any
+node or edge to give it meaning in the brain you can't do that so all the meaning must be inferred
+from the neural connections next synapses are one-way unidirectional where edges are typically two-way
+that is they have inverses the fact that nimoy played spock implies that spock was played by nimoy
+while this might be intrinsic in the graph it must be explicit in the brain
+finally all your brain can detect is the relative spike timings of different neurons how it converts
+these relative spike timings to knowledge is the topic of this video even this simple graph would
+be immensely complex when represented in neurons so in the previous video i introduced these very simple
+questions given that a is red and b is red what color is c further i asked given that a is lighter than b
+what is the relationship of a to c now i'm going to go through how to build a knowledge graph in neurons
+which can answer these very simple questions
+we're only going to consider just two very basic relationships a is red so it has a hue or color
+which is a more or less absolute relationship and a is more intense or brighter than b this relationship
+is only meaningful in comparing objects of similar types likewise b has the same hue as a and c
+but it is not as bright as a or c here's how we might represent this information in a graph we have
+the nodes a b and c and another node representing the color red then we add edges indicating that a b and c
+all have the same hue of red and then we add more edges to store the facts that a is lighter than c
+and lighter than b while c is lighter than b but not lighter than a while we've just started with
+these two relationships hue and brightness there are numerous others which would be applicable to an
+object in your visual field object can have shape they might be bigger or smaller than each other
+they might have some visual texture or shading or be nearer or further they might be touching or have a
+differing orientation there are also relationship types related to other senses like louder than or
+hurts more or smells like then there are even more complex relationships like causes or happens which are
+essential to a gi performance is important to think about because it has profound implications on how the
+knowledge in your brain must be structured in a moment i'm going to show you an image of a's and
+ask you how many of them are red did you see them did you see that there are two red a's and did you also
+catch their relative positions consider how long it took for you to build these relationships in your
+brain just a fraction of a second there are several implications from this information first there is no
+time to grow new synapses this means that all the synapses must already be in place your brain just
+adjusts the weights of the synapses there is also not enough time to set any precise synapse weights
+recall from a previous video the more precise you want the synapse weight to be the longer it will take
+both to set and to sense this also implies that all possible relationships must already be present
+they must be connected with low level synapses just waiting to be strengthened to become meaningful
+finally we can easily conclude all of the relationships you can sense from your visual
+inputs must be processed in parallel so let's start with a single relationship which might be
+represented by two nodes and an edge let's start with representing the color of a
+a we might say that a has the color or hue of red but in english we might simply say a is red
+in order to take on a color synapses must already exist to all possible known colors
+so representing the information that a is red is simply a matter of strengthening the synapses between
+a and red and weakening the synapses between a and other colors i discussed how this happens with
+heavy and synapses in the previous video of course it's not that simple because not only when you see a is
+red if i ask you to name some red objects you can name a just as you could count the red a's a minute ago
+for the most part every relationship has an inverse but because synapses are one directional
+a relationship and its inverse are really just two separate relationships
+so as we zoom in on this specific relationship and through the remainder of the video i'll show only
+the strengthened synapses but keep in mind that there are thousands of other synapses with lower
+weights waiting to be used if needed of course it's still not that simple in order to differentiate
+which relationship is which there must be additional neurons one representing the relationship going
+forwards one representing its inverse and this was described in greater detail in the video on the
+universal knowledge store but wait there's more if you're given two nodes or objects you want to be
+able to know what the relationships are between them in a moment i'll use this third relationship to ask
+what's the relationship between a and b and learn that a is lighter or bigger or something else so every
+relationship is represented by three neurons the relationship going forward the inverse and the
+query which will allow you to know what the relationship is between any two objects all this
+complexity is embedded in a single knowledge graph edge
+so if we also wanted to represent the information that b is red we'd need to utilize another set of
+neurons and synapses to represent that color relationship
+now if we were to add the lightness darkness relationship to say that a is lighter than b
+we'd not only use another set of three relationship neurons but we'll have to represent these in our
+library of all possible relationships you can see as we build this tangle of synapses
+it's beginning to look a little more brain like especially when you consider that for every synapse i
+show there are thousands with low weights just waiting to be used
+i just wanted to touch on the idea that we might store information of how much lighter a is than b by
+using multiple synapse weight levels because the more possible levels the slower things run
+it would be much faster to have eight different brighter than relationships representing different
+relative levels than to interpret multiple synapse weights
+by adjusting synapse weights any relationship can be applied to any neuron pair within a cluster of
+thousands of neurons in the same way as selecting a color the meaning of a relationship can be selected
+from a large number of available relationships by adjusting a few synapse weights so here we're
+representing that a is bigger than b and here we're representing that c is brighter than d
+in essence the brain has a pool of relationship structures and these can be pressed into service
+to relate any neurons in a cluster with any relationship by adjusting the weights of a few synapses
+to add a few more wrinkles to the process consider that neuron firings are seldom exactly coincident
+so short-term memory is going to be necessary everywhere this means that wherever i've drawn a single
+neuron two neurons will likely be needed we should also consider that most relationships are transitive
+so if a is bigger than b and b is bigger than c then a is bigger than c fortunately this is not difficult
+in neurons as i described as the recursion function in the video about the universal knowledge store
+we can draw a number of conclusions from the information i've presented in this video first a
+knowledge graph or some sort of equivalent structure is necessary in the brain because you can answer the
+same types of questions that can be addressed by the knowledge graph creating such a graph in neurons
+however is immensely more complicated than it is in a computer this observation has huge
+implications for the amount of computer power needed for agi because the computer is much more efficient at
+this type of operation in neurons you can't simply add edges and edge types whenever you need them
+because the process is too slow in the computer you can i've just discussed two relationship examples hue and
+brightness but the relationship structure is similar regardless of the number and types of
+relationships and the process of creating a relationship between two objects involves strengthening a few hebbian synapses
+finally the ability to infer new relationships is a key to agi and is a topic of ongoing research
+all this functionality is currently being developed in the brain simulator 2 and you can download it free from brain sim.org and follow the development
+the brain simulator project is continuing to gain momentum so be sure to subscribe to this youtube channel
+and join the facebook group to stay up to date on the latest development and weekly updates
+also share this video with your friends and colleagues and encourage them to join the community project so it can
+make even more progress towards discovering agi and as always thanks for watching
+you

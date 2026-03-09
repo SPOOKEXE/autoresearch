@@ -1,0 +1,113 @@
+Today's artificial intelligence may be inspired by the brain, but it isn't biologically grounded.
+It's like when a movie starts off saying inspired by true events and then goes off in whatever
+direction the writers and directors want. Today's artificial intelligence, particularly artificial
+neural networks and large language models, are great, but bear virtually no relation to how
+our brains function. Why does this matter? Two major reasons stand out, energy usage and common sense.
+Our brains operate on only 20 watts of power, less than my laptop, yet brains excel at context
+awareness, abstraction, and common sense, areas where AI often fail. In this ongoing series about
+how your brain works, this episode will focus on why today's AI has little to do with how your brain
+works. I'm Charles Simon, long-time AI researcher, software developer, and manager. Beyond AI, I've
+developed software for neurological test instruments and neural simulators. I created the Future AI
+Society to explore how neuroscience can inform smarter, more human-like AI. I'm using our open source brain
+simulator projects for simulations and demonstrations throughout this video series. If you want to
+experiment on your own, you can download the Brain Simulator 2 from GitHub and try it out.
+Let's get started with this diagram, but don't click away. I only want to emphasize two things.
+This diagram shows a neural spike, a voltage pulse resulting from the movement of ions across the cell's
+membranes. First, let's observe the timing, and this is really important. The propagation delay, which is the
+speed that signals pass between neurons, is typically around a millisecond. But even under ideal conditions,
+a neuron can only repeat spikes slower than every four milliseconds because of its refractory period.
+Relative to electronics, these times are laughably slow. This has a huge impact on what sorts of AI
+processes are possible or impossible in neurons. Why so slow? Although the diagram plots voltage over
+time, it's important to note that neurons are not electronic devices. Signals aren't carried by electrons
+flowing through tiny wires, but rather by chemical gradients of ions. Because these ions carry a charge,
+we can measure them with electrodes, which is why neural activity often appears as a voltage trace like
+this one. But this does not change the fact that neurons are about a billion times slower than
+electronics. Most neural signals travel along axons at a leisurely two to three meters per second,
+a brisk walking speed, as opposed to electronic signals traveling in a wire at near the speed of light.
+Understanding this distinction is crucial when comparing biological neurons to artificial neural
+networks or digital circuits, which we'll get back to in a moment.
+These slow-moving neural spikes are all about the same size and shape. So how can they represent meaning?
+How can they carry information? Let's look at the simplest idea that a neural signal might represent a
+value. If we are restricted to spikes traveling along axons, there are only a few plausible ways to
+represent a value. First, the average spiking rate. Consider a spike train of 200 spikes per second as
+representing one value and 250 spikes per second as another. Most peripheral nerves use this type of
+signal encoding. Next is interspike timing. The interval between any two spikes can carry analog
+information allowing precise resolution. Your nervous system uses a mechanism like this for sound
+directionality. Another approach is that multiple spikes in parallel across many neurons can convey
+intensity. The more fibers firing, the greater the value. Touch and pain nerves use this mechanism.
+Lastly, individual spikes or bursts with specific meanings are likely the primary mechanism in your brain.
+An individual neural spike would have a specific meaning and the context and related connections define
+what that meaning is. I should add that we could look at the axon as a serial link and spikes could
+potentially encode serial signals the way computers do on a USB cable. But this is completely implausible in
+biology, so I'll ignore it. How many spikes does it take to set the value of a synapse? When we consider
+learning, perhaps 10 or 20 repeated spikes are required to adjust a synapse weight, meaning it would
+take 40 to 80 milliseconds. This is in stark contrast to artificial neural networks where each weight
+adjustment takes a fraction of a microsecond and the backpropagation algorithm cycles through thousands or
+millions of training samples. If neural networks were as slow as neurons, the backpropagation algorithm
+simply wouldn't exist because neurons are just too slow.
+In most artificial neural networks, a neuron computes a weighted sum of its inputs,
+applies a nonlinear activation function, and propagates the result forward.
+In neurons, there is no output value. There is either a spike or no spike. Internally,
+the neuron accumulates charges over time, and that means there is an internal memory factor,
+but there is no way for other neurons to access this internal charge. And there is also leakage.
+The internal charge leaks away over time. And finally, remember that refractory period of 4 milliseconds?
+Incoming spikes during the refractory period are ignored. What all this means in neurons? For average spike
+rates, the faster the rate of incoming spikes, the more spikes will be lost during the refractory period.
+The slower the rate of incoming spikes, the more will be lost to leakage.
+The result? Any summation will never be precise because of lost spikes.
+And this representation is inherently slow, and the more resolution you want, the slower it has to be.
+With neurons representing a maximum of 250 spikes per second, you need enough spikes to count up to get the average.
+To differentiate a value of 250 from 249, you need an implausible full second to resolve the values.
+If you only want to represent 10 distinct values, you still need 40 milliseconds to differentiate 9
+spikes from 10. And that would be the equivalent of a computer running at 25 hertz. Not gigahertz,
+megahertz, or even kilohertz, but 25 hertz. Interspike timing can be much more precise,
+but there isn't much a neuron can do with such a signal because it cannot be summed or weighted.
+With this type of representation, individual neurons can only detect which of two signals is spiking
+faster or fires first, or detect whether a signal is above or below a frequency threshold given a pair of spikes.
+That means that with 10 neurons, you could differentiate 10 different interspike timings.
+The more values you want, the more neurons you need.
+Which brings us to signals in parallel.
+You could imagine 10 signals representing a gray level. If none are firing, it represents black.
+If all 10 are firing, it represents white.
+This is not very efficient, but this is how touch signals enter your brain.
+To map this to individual spikes, 10 neurons could each represent a single gray level or touch intensity
+from 1 to 10. And it can have that meaning with a single spike. Average spike rates,
+interspike timing, and spikes in parallel can easily be converted to this signal representation.
+And this approach is energy efficient because only a single spike is needed to represent a value.
+The downside? It may take more neurons, and the number of neurons predefines the number of different
+values. If your brain can differentiate 10 gray levels, it's a complete rebuild for it to learn to handle 20.
+What does all this mean for AI versus the brain? First, any AI algorithm which relies on floating
+point numbers is out the window. At best, a given signal might take on 10 discrete values.
+More than that, a spiking rate signal is just too slow to be useful.
+Likewise for synapses, as I covered in a previous video,
+if your algorithm relies on floating point synapse weights, it is not neurally plausible. Biological
+synapses are also limited to a few discrete values. Learning speed is always an issue,
+and setting a biological synapse weight can easily take 10 to 20 spikes, or 40 to 80 milliseconds,
+nearly a tenth of a second. Think about how many iterations your AI algorithm needs, and you'll
+conclude that most AI learning is completely implausible as a mechanism for the brain,
+which can learn information in a single presentation.
+On the plus side, average rate, inter-spike timing, and parallel signals can easily be converted to
+single spike or burst signals with just a few neurons. From there on, it's clear sailing,
+and signals can pass from level to level in just a few milliseconds.
+As a preview of coming attractions, just because we're in the digital world doesn't mean that all
+analog ideas are lost. Consider an instance where your brain needs to recognize a thing given its
+attributes. We will never get a perfect match because we won't ever sense the entire suite of
+attributes simultaneously. So we fire bursts on all the attributes we know, and the result which fires
+first is the winner. The time it takes for the result to fire is proportional to the accuracy of the match.
+It's the confidence that the recognition was correct.
+So if we want human-like AI, we need to ditch the fine-grained matrix multiplication in favor of spike
+and burst-based digital signals. Artificial neural networks may be inspired by the brain, but they are
+not biologically grounded. It's like when a movie starts off saying, inspired by true events, and then
+goes off in another direction. AI information representation and learning processes are
+fundamentally incompatible with how real neurons behave. To build truly brain-like systems, we must
+rethink AI from the ground up using spikes, bursts, context-sensitive learning, and graph-based knowledge
+representations that reflect how the brain navigates meaning.
+If energy efficiency, common sense, and flexible learning are the goals, then today's AI has taken
+the wrong road. The brain's architecture holds the clues, but we must stop trying to squeeze neuron
+functionality into matrix multiplication and start building models that respect the native language of
+neurons, time, structure, and spikes. Next time I'll dive into how individual neurons can recognize patterns.
+If these ideas resonate with you, if you want to see where they lead, please like, subscribe, and hit the
+notification bell because the YouTube algorithm won't surface videos like this unless you ask for them.
+And if you want to dig deeper, join the Future AI Society. It's free and help us shape the next
+generation of intelligent systems. And you can participate in our online conversations.
+And as always, thanks for watching.

@@ -1,0 +1,149 @@
+Welcome back to the channel. Many of you have been asking, how does the brain's graph actually
+learn? In this video, I'll answer that question by looking at how it relates to machine learning.
+The key is that the word learning means very different things depending on whether we're
+talking about AI or people. For artificial intelligence, learning usually means adjusting
+weights inside a neural network model for a better fit to a data set. For humans, learning means
+building a flexible internal model of the world, a graph of interconnected concepts, rules, facts,
+and experiences. These are not the same thing, and the differences explain why today's AI is powerful
+but still far from human intelligence. Now I know what many of you are thinking. Large language
+models like ChatGPT already seem smart. Don't they prove that machines can learn like people?
+Well, in a word, no. Large language models are remarkable, but they're still a kind of supercharged
+pattern matcher. They've been trained on unimaginably huge text data sets which let them generate fluent,
+seemingly intelligent answers. But under the hood, they don't build an internal model of the world
+the way humans do. They don't understand facts. They're just predicting the most likely next word
+based on statistical patterns. That difference is exactly why large language models can be dazzling
+in conversation, yet still make basic reasoning mistakes no child would.
+I'm Charles Simon, longtime AI researcher, software developer, and manager. Beyond AI, I've developed
+software for neurological test instruments and neural simulators. I created the Future AI Society
+to explore how neuroscience can inform smarter, more human-like AI. And I'm using our open-source
+brain simulator projects for simulations and demonstrations throughout this video series.
+And we're working on software which implements many of the learning techniques I'll show in
+this video. If you want to experiment on your own, you can download the Brain Simulator 3 from
+GitHub and try it out. If you are interested in this type of content, be sure to like, subscribe,
+and ring the notification bell because the YouTube algorithm won't surface videos like this
+unless you ask for them.
+So let's step back and take a brief look at how machine learning actually works.
+At its core, machine learning is about patterns in data. A system is given a massive collection of
+examples, thousands or often millions, along with labels or signals that tell it what's correct.
+The backpropagation algorithm then adjusts the network's internal weights to minimize the error
+across all those examples.
+After enough iterations, it develops a statistical model that can produce outputs similar to what
+it saw during training.
+Take digit recognition as an example.
+One of the classic machine learning data sets is MNIST, a collection of handwritten digits.
+A neural network trained on MNIST learns to map the pixels of an image to one of ten categories,
+zero through nine. It gets this right most of the time.
+That's the general pattern across all machine learning.
+Feed in lots of data, optimize weights to fit the data, use the resulting model to classify,
+predict, or generate outputs.
+This approach has real strengths.
+Machine learning is excellent at narrow pattern recognition.
+It can distinguish cats from dogs in photos, detect credit card fraud, and translate between
+English and French.
+It can process vast amounts of data far faster than any human, and often find subtleties in
+the data which would be overlooked by human observers.
+But there are also major weaknesses.
+Machine learning systems don't understand what they're doing.
+They can't explain their reasoning, they fail when presented with data outside their training
+distribution, and they lack the abstraction and common sense that come naturally to people.
+They don't learn efficiently, requiring far more examples than any child would, and they
+don't learn continuously.
+Once trained, a machine learning model is frozen until retrained from scratch or fine-tuned.
+Likewise, large language models like ChatGPT can give the appearance of thinking because of
+their truly vast training sets.
+With enough examples of intelligent human writing, the large language model can produce sequences
+of words which sound like intelligent human writing, without understanding their meaning
+at all.
+And these truly vast training sets are at the heart of the AI energy crisis, which I'll circle
+back to later in this video.
+That's why in the rest of this video, we're going to contrast this narrow statistical approach
+with the way humans learn, always keeping in the back of our minds that when we truly understand
+how people learn, new AIs can be developed to do the same thing.
+When it comes to learning, one of the most striking differences between machines and humans is the role
+of data. Machine learning systems depend on truly massive amounts of data, while humans can learn
+from just a few examples.
+Let's start with the machine side. Imagine training a computer to recognize handwritten digits.
+These digits are often poorly formed and it is up to the neural network to infer what ideal digits
+might look like.
+Now compare that with how you learn to read digits.
+A child might be shown a neat 2 on a chalkboard, or a clearly printed 5 in a book.
+After seeing just a handful of clean representative digits, the child can recognize all sorts of digits.
+Tilted ones, digits of any size, digits written in crayon in any color, even written on a cluttered background.
+The human brain doesn't need 60,000 examples. It can generalize from just a few.
+How does it manage that? The key lies in the brain's graph structure.
+In this framework, each digit is linked to a set of visual exemplars.
+When a new input comes in, the brain looks for the closest match among its stored exemplars.
+If the match is good enough, the brain treats it as input, as that version of the digit.
+If no match exists, or if the brain initially guesses wrong and is corrected, then a new exemplar is stored.
+So a single node representing a digit can have any number of exemplars.
+Importantly, the system doesn't bloat endlessly.
+The brain employs internal processes that act like housekeeping staff for the graph structure.
+As with other areas in the graph, they look for common attributes, which they can bubble up.
+And they can merge overlapping exemplars, prune away rarely used ones, and refine the overall representation so it remains efficient.
+Before adding more detail, let's summarize the simple learning process.
+The brain receives some input, searches for a closest match among its library of stored patterns.
+If no good match is found, or if a match is found and was subsequently shown to be wrong, a new stored pattern is added to the library.
+Then other processes merge and prune away unnecessary exemplars.
+The result is that the child never has to memorize thousands of individual variations of the number two.
+Instead, they keep just enough exemplars to cover the diversity they encounter and discard the rest.
+But the efficiency goes deeper still.
+The brain doesn't store the exemplar nodes as raw pixels the way a neural network might.
+Instead, it encodes them in terms of corners, arcs, segments, and their relative positions.
+Given that features are attributes of a graph node, the comparison process is one of comparing the similarity of the feature set, not comparing the underlying image pixels at all.
+This representation is inherently scale, position, and rotation independent.
+In other words, once you know what a number three looks like, you don't need to separately learn what larger or smaller threes, or even rotated threes, look like.
+The invariance is baked into the representation itself.
+That's why a child can recognize a three regardless of where it's written on a page or whether the page is tilted a bit.
+The machine learning, by contrast, usually needs to see thousands of rotated and resized versions of the same digit to achieve similar robustness.
+The size issue is not even considered within the context of the MNIST exercise,
+and a program which was trained to play Atari video games was totally lost when the game screen was shifted a few pixels.
+So we'd expect that the three consists of links to a few arcs, and the four consists of links to three segments of different lengths joined by two angles with specific ranges.
+This means that the four can be represented by just five synapses, each to a specific visual primitive, rather than the 784 pixels of the input image.
+Now, we're still improving our translation from pixels to features, but overall, this is the way the brain must work to be consistent with what we observe.
+And there's another human advantage.
+Humans also engage in a powerful form of unsupervised learning.
+Think of a baby in its first years of life.
+No one is labeling the baby's experience saying, this is a chair and this is a dog.
+Instead, the baby simply watches, listens, and touches, gradually categorizing the world on its own.
+The only way this can work is for the brain to store huge numbers of correlations and then prune away those which don't prove useful.
+Over time, clusters of experiences solidify into concepts.
+By the time formal teaching begins, the child already has a rich internal model of its environment built without explicit labels.
+It includes the internal representation of images of segments, corners, and arcs I mentioned earlier, so when it comes time to learn how to read, the child already knows how to interpret what it sees.
+There's yet another mode of human learning that machines almost entirely lack.
+We can learn by simply being told.
+If someone says, the capital of France is Paris, you can instantly add that fact to your knowledge.
+It links into what you already know about countries, cities, and geography, and it becomes usable immediately.
+ChatGPT emulates this idea with a context window, which can be many thousands of words.
+But unfortunately, once new facts exceed the size of the context window, they're gone.
+They are never included in the underlying knowledge base of the large language model,
+which is only changed when the large language model is completely retrained as it goes from one version to the next.
+Machine learning neural network cannot do this at all.
+This is why human culture is so powerful.
+Knowledge can be transmitted directly from one person to another, multiplying across generations.
+It's a kind of exponential learning that no machine can yet match.
+Another stark side effect of the contrast in learning lies in energy use.
+Training today's large models requires enormous compute resources and energy, sometimes rivaling entire power plants.
+This is at the heart of the current AI energy crisis.
+Let's look at the energy of ChatGPT5, which was trained using several gigawatt hours of energy.
+In operation, though, it can respond to an individual request, using only a few watt-seconds of energy.
+By contrast, your brain runs continuously on about 20 watts, so if you take 10 seconds to answer a question, that's 200 watt-seconds.
+A lot more than ChatGPT.
+Of course, we don't know what portion of the brain is involved in answering a question, but here's the rub.
+The human's training is more or less continuous, so there is never the gigantic energy spike needed for training.
+We have to look at ChatGPT's training energy as being advertised over the millions of queries which are processed over the lifetime of the trained model.
+The brain achieves this efficiency by continuous learning, which is enabled by storing knowledge compactly in graphs, sharing attributes across categories, and searching only the relevant portions of a graph when responding to a question.
+Where machine learning gulps down data and electricity, human learning sips gently and still outperforms inflexibility and understanding.
+So let's pull the threads together.
+Machine learning and human learning both use the same word, learning, but they are not the same process.
+Machine learning depends on massive data sets, memorizes patterns, and struggles with context.
+Human learning uses a graph structure to store exemplars, build abstractions, handle exceptions, and transfer knowledge across tasks.
+We learn by observation, by curiosity, by experience, and by being told.
+We can explain our reasoning, apply common sense, and we do it all on very little energy.
+The bottom line is simple.
+Machine learning is not like human learning.
+And if we want to build AI that truly understands, we need to go beyond brute force pattern matching and look toward graph-based, brain-inspired architectures that make human intelligence possible.
+I hope you'll join us on this journey towards building AI that doesn't just process information, but actually understands it.
+If you'd like to follow along, be sure to like, subscribe, and hit that notification bell because the YouTube algorithm won't surface videos like this unless you ask for them.
+Then, try out the software, and join the community for free to participate in our online video conversations and our Discord server.
+Check out the links below.
+And as always, thanks for watching.

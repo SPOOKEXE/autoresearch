@@ -1,0 +1,540 @@
+let's formally get started i want to thank you all for coming and let's uh uh i appreciate your
+participation and i'm i've got about uh 15 or 20 minutes of material prepared and so we've got
+plenty of time for additional discussion when we get to the to the end of the day and so uh do dive
+in with questions this is all material but i've never presented before so if i skip over six steps
+you have to call me out on that so i can back up and and explain what it was i was meaning
+but i look forward to your comments and hope that you'll chime in at any time to uh help get things
+going and i hope uh somebody can can volunteer to be the official moderator to keep an eye on the
+chat because as i'm talking and demoing i don't ever see the chat so i get uh if if people are
+writing things in the chat that's great i hope they do uh but uh i i typically won't see them
+so without further ado let us jump in with the grand agenda and on the grand agenda there are
+only two items item number one well we're talking about brain simulator thought brain simulator thought
+is a new thing and the reason it's a new thing is that a change that i had to make to the system
+is that uh where we used to have formally a graph of nodes and edges the key to your to the way your
+brain has to work is that everything is what i'll call a thought and if everything is a thought then the
+links in your brain have to be thoughts too and i'll talk about that in in a little bit of detail but
+but it's going to be its own meeting after i've fleshed that out and made it work and the second
+is that um and this is where i want to focus today is on a neuro plausible way of handling sequential
+information and i'll talk about why you need sequential information and what sorts of things are included
+and one of the key things that we'll get out of this is the structure that has to be in your brain
+has to include sequences including other sequences and we'll see that uh as as we talk about how this
+has to be built and you'll also be able to see that oh the way i'm thinking is governed by a lot of the
+features of the way your brain has to store stuff and so we'll circle back to that in just a second
+but i want to talk about the thought and this uh if we think about an atomic thought you know what is
+the absolute minimum piece of thought you can have and when you stop to think about it um from a
+biological perspective it would be a lot nicer if you only have to have one structure and we think of
+this in terms of of like uh stem cells when your body gets gets started it is built of stem cells
+and a stem cell is something that can uh by selectively enabling and disabling certain
+characteristics the stem cell can uh morph more or less into any kind of a cell in your body so it can
+become a skin cell or it could become a neuron and uh this is because your dna as a complete set has
+all of these capabilities put uh put together and what i am proposing is that the fundamental thought
+has lots of capabilities as in it could represent what in a graph would be a node or what would be a link
+and then as so as your brain develops it can develop oodles and oodles of identical things
+which i'm calling thoughts that can be or the hardware that supports the thoughts that can then specialize
+into two or perhaps three other things in your brain that actually do this so they would work by having
+uh over time the unused portions atrophy so we're going to start by carrying around all the pieces and
+move forward and the reason that i had to do this is that uh as i begin began to represent uh uh
+thoughts that incorporated other thoughts uh the the problem is that relationships like uh fido plays
+outside if the weather is uh sunny is is a relationship between relationships and so if you can have
+relationships relationships between relationships then what is a link can apply equally to another link or
+it can apply to a more atomic thought and what that says to me is that there's really only one thing that's
+going on and so there was significant restructuring of the project and rather than try and make things
+compatible with the existing brain simulator three i've created a new project on github and it is brain
+sim thought and the reason that i've done this is simply not to fool with the backwards compatibility
+that made it a whole lot easier to work on and i'll talk about that at gory detail if you ask at the
+end of the day but uh i think that it's interesting enough to be justify its own conversation so we'll pick
+that up again later too so sequences and things that are obvious that you need sequences for in your brain
+like muscular coordination and i am talking to you with thousands of muscular contractions in my vocal
+tract that are happening way too fast for me to think about and so you have to have in your brain
+tables of if i want to say cat there's a cuss sound and there are 50 muscle contractions to make that
+and then there's the a sound and then there's the tuss sound and you have to be able to have a sequence
+that happens after the essentially this set of muscle contractions and that set of muscle contractions
+following that set of muscle contractions and that's the only way your brain can do it because
+your brain is so slow if you're building a robot you don't have to think in those terms although if you
+do you get a better idea of the way the brain works so if you're for example learning to play the piano
+you don't start by playing some huge piece of music you start by playing one simple sequence
+of notes until your hands get coordinated enough to play that sequence of notes and then you build
+another sequence of notes and and link to that so um muscular coordination is huge and by the way my
+my contention is that that is what your cerebellum is doing and your cerebellum is 56 billion neurons
+where your neocortex that does the thinking is only 16 so this muscular coordination thing is a huge deal
+in your brain and it has to be a huge deal because if you're slow you're not going to survive if you're
+a hayman or you know a wild animal and so you need to be able to be as fast as possible and you're
+willing to devote 56 billion neurons to it uh something that occurred to me after i started
+working on this is temporal sequences a happens after b happens after c and the reason this is
+important is so important is that if i tell you fido is a dog you don't necessarily you don't
+remember just that fido was a dog and i you remember that i told you that fido was a dog
+before i told you that fido is a cat and so everything you're learning has these temporal
+sequences associated with it and essentially everything you everything you sense has got to
+be stuffed into a sequence of some sort and that sequence is kind of transient you forget most of
+it very quickly but uh it has to be in a sequence to start with so if you're reading letters you
+can't just read a set of letters in parallel you have to know that they are in order and so the next
+thing on this list is spelling that cat is spelled c-a-t of course you have to have be able to remember
+numbers as well and things like that but uh if the spelling only makes difference only makes sense
+in the terms of the order of the letters and also of course we have words that have multiple
+occurrences of individual letters and that has an impact on the structure that there has to be too
+one of my contingents is that none of us know how to spell neuro neurology we know how to spell the
+neuro prefix and we know how to spell the ology and we put that together and think we know how to
+spell neurology because our brain is hidden as hidden from the s from the fact that we're working on
+little bits and plugging them together likewise we have to have sequences of words and sentences and
+that's something that's really interesting music you can remember music because you can remember the
+sequences of notes and things like that and i'm going to give you a demo here where uh i show the
+structure of three blind mice but a key is essentially everything gets stuffed into a sequence at some point
+and searching this sequence these sequences is really a key issue as we were talking about before we got
+started that this has to happen in parallel and i've i've written some software to do that but the key
+is that if i tell you about a little lamb your brain is going to think about mary and so that has a real
+impact on the structure of the sequences as i'll explain it to you in in more detail and in this is how
+magicians uh take advantage of your brain yes street magicians you know now in a cpu we're gonna now i want
+to talk about the structure and one of the where places where i diverge from the artificial intelligence uh
+uh uh general theme of operation is that i want to figure out what this target structure is before i
+figure out how it learns and so i'm going to be talking about the target structure and we'll talk
+about links about learning the learning process here after i figure out how that must work but
+the structure in a cpu it's really easy like you store a string uh like the spelling of cat and it's
+trivial because in the cpu everything has an address and the addresses all have a predefined order
+so if you simply stuff stuff sequentially in ram you can get it back in order neurons
+can't do that and there are two reasons that neurons can't do that an individual neuron for example might
+fan out to lots of attributes so if we had a phyto neuron it could fan out to brown and and barky and
+hungry or whatever but all of those signals arrive at their destinations at essentially the same time
+but if you want a sequence you've got to be able to pull things back in order and an individual neuron
+cannot do that because all of its signals arrive at all of their destination synapses more or less
+simultaneously and a side effect of having no addresses is that you can have adjacent neurons and if
+they're not connected by a synapse they could be on different sides of the brain for all your brain
+cares about because only through synapses do we get the connections so
+now you could say well if you have adjacent neurons they have a propensity to create synapses
+that hook each hook to each other but that's the key
+they have to have the synapse and the synapse is the linked the link and so
+what if for those of you who have taken computer science 101 a linked list is the only possible
+solution your brain can use and now i'm going to talk about how this might look in your brain and
+the kinds of things that might be that we might glean from knowing what the structure is in your brain
+and how we might utilize that in ai and so the question is going to be how do we implement
+a linked list in neurons and or thoughts because thoughts do have a strong parallel with neurons
+and here's the spelling of cat so we have a single
+thought which is cat is spelled and then we're going to have the sequence of letters and the sequence of
+letters has to look like this where you have excuse me cat sequence 0 sequence 1 sequence 2 i put these
+names on just to keep track of them and here's the first and it points to a value of c and it comes out
+to a thought of the individual letter of c and the second step in that sequence
+says it has a value of a and it points out to this a thought and it each of these has a next nxt
+component and so this is a t that says uh well this is a typo this is cat sequence one should follow
+should go to cat sequence two uh uh cat sequence zero went to cat sequence one and this was cat sequence
+one all of these should be cat sequence one um and these should be cat sequence two
+anyhow um and you get to the last letter and it has a t and it has no next component
+and so in order to say cat sequence uh spelled c-a-t there's no avoiding that you have to have these
+three intermediate kind of sequence representation neurons and the reason of course that you can't put
+the next parameter say on the c is that if you did then every c would be followed by an a and there would
+be no way to represent different words so you have to have this kind of intermediate structure
+and of course i build this intermediate structure out of atomic thoughts just like everything else
+and these are just simple uh links on those thoughts and um while these are the thoughts of individual
+letters these could be other sequences and um i'll show you a demonstration of that in a minute
+so if you've i mean this if you've had if you've had the computer science explanation of
+of linked lists this is old hat that you have to have the next pointer
+in your brain in a linked list you often have a previous pointer but simply by observing how the
+brain seems to recall stuff it's likely that there's a first pointer but it is unlikely that
+there's a previous pointer the way you would often have in a computer system and you can gather this by
+the fact that um if i ask you to recite your social security number backwards this is a chore because
+you don't have the links that you can follow in reverse but if i still see say little lamb you can go
+immediately to mary because you typically will have a pointer to the first element in the sequence
+and so you can typically get directly to the first letter of the sequence but you have a tough time
+getting to the previous entity the previous element in the list okay so as we move on
+here i've illustrated the first list so the first pointer so every element points back to the first
+and then all of this collapses in your brain to your brain thinking that it knows directly how to spell
+cat all of this lower level sequencing crap is hidden you don't you can't be aware of it or you'd go nuts
+but you think you know how to spell cat directly but only in terms of a sequence and so your brain
+senses this and i've invented a a little up arrow a parrot that says what follows this is a sequence
+and that's what your brain perceives it perceives it can do sequential data even though in in the
+underlying hardware it cannot and so your brain hides from you this this uh uh complexity but it's
+still there in your brain sequences seem to be limited to perhaps seven or ten elements and so if you
+want to remember something that's longer than that you remember sequence a and sequence b and
+then you remember sequences of sequences the sequence values as i mentioned can be other sequences and
+that's how all of this nesting works and i'll demonstrate that a problem that i haven't really
+come to an obvious solution to is that if you're following a value you have to wait for that
+subsequence to finish processing itself before you move on to the next step of your outer sequence
+and especially in a muscular coordination or a music sort of thing the timing is not fixed
+so i can speak slowly with the same data structure with which i can speak at a normal speed
+and uh so this can only work if there's a lot of feedback within the sequences that says i'm done
+with this section now you can move on to the next and i mentioned the previous already
+i'm going to do three quick demonstrations word spelling the history of events and musical memory and
+um as i said before these are these are not targeted towards how you learn sequences these are targeted
+about at how you might retrieve sequences or how you must store them and so without
+further ado we're going to move back to this other screen
+and we have the brain simulator
+and here i'm going to give it the information cat is spelled cat
+and if i go to just display the unknowns
+here is cat and i've put it in uppercase so you can differentiate it from the individual letters
+and so uh the individual letters are in lowercase so the uppercase cat thought cat is spelled
+with the sequence cat but we can expand this by double clicking and we can see that it's cat sequence zero
+it points back to itself it has a next pointer to a thing that's a t and it has a value pointer of c
+now if we expand this now we have a next pointer to just the t and we'll expand that next pointer
+and we can read this kind of backwards that the spelling is c a t
+and it points to this first and this becomes either more or less confusing depending on your point of view
+if i do the show details where i can see that cat well it's an unknown but cat is spelled cat sequence zero
+and the system gives things names so that we can talk about them not because it needs them because
+all internally these are all raw pointers so it doesn't need the names at all so cat sequence zero
+has a first pointer to cat sequence zero cat sequence zero has a next pointer to cat sequence one
+and cat sequence one has a next pointer to cat sequence two and cat sequence two has a value of t
+and no next pointer and cat sequence one has a value of a and cat sequence zero has a value of c so that's
+That's how it's being built internally and knows how to spell cat.
+Any questions yet?
+Okay, moving along, suppose you wanted to spell cats.
+And I'm just going to say add and here's cats.
+And cats is spelled cats as we would expect, but the next pointer, this one points to cat
+and this one is just the S. So it's C-A-T and S. And so what the system has done is it searched
+for any existing sequences that it can reuse.
+And it has reused the sequence C-A-T. And this again, if we show details, we'll see cats.
+And cats is spelled cats sequence is zero.
+And the next points to cat sequence one, but the value is the cat sequence zero.
+So here we've got a kind of an execution path with call statements in it.
+And in the code, I wrote this in such a way that it does not require any recursion, but essentially,
+it's emulating the recursion by simply keeping track of where the first is and what it's supposed
+to return to.
+To make this a little more complicated, we can say scats and it will put the S at the
+beginning.
+And of course, it isn't actually ever doing an insertion.
+It's just building a new sequence that incorporates the existing sequence.
+So that's all we're going to say about that.
+And we're going to clear all of that out and go back to my favorite FIDO.
+FIDO is a dog and we're going to expand dog.
+And now I've invented the idea of events.
+So we're going to say FIDO goes outside.
+And FIDO plays fetch.
+And so it's built these links the way it always has, but it's also building this linked list
+of events where the most recent event is first in the list.
+And so FIDO goes inside, gets added to the beginning of the list.
+And so these are the basic links that say the sorts of things that FIDO can do, where this
+says the specific order in which FIDO did them.
+And it would be my contention that everything that you are learning, that everything that
+you encounter gets shoved into an event stream like this.
+And subsequently, most of it is pruned away.
+But this is the event stream that I think is a necessity.
+And my last quick demo here is I'm going to show you a sound setup.
+And the reason, I've got a number of reasons for doing this.
+First, can you hear that?
+No.
+Okay.
+Essentially, what I've done, and the reason that I like this demo, is that these keys are
+tied to things that make sounds.
+And I've used a really simple MIDI interface, so it can create a couple of notes.
+And then it creates, automatically creates these, I've created these sub phrases, musical
+phrases.
+And if you key in specific notes, the system can find them.
+And maybe you can see a little bit of this.
+So if I say, play three blind mice.
+Yeah, it's not even going to show me what I want to show you.
+There we go.
+We're going to fire that.
+And you can see the pitches firing in sequence.
+Are you searching by sound?
+And yes, I can say ED, and it will search and find EDC as its most likely solution.
+And so it searches by sound, and it plays the sound.
+And what's, I think, really fascinating about this is that there is nothing in the sequences
+that it says, this is a sequence of letters or this is a sequence of sounds.
+The process of creating the sequence and the process of searching the sequence is identical
+in all these cases.
+And I think that's a really interesting idea, and I wanted to do it with the sound because it does show how things begin to attach to the real world and how it's searching for real world input and creating real world output that is not necessarily the symbolic AI crap that is all words and stuff.
+And in this case, and in this case, I'm showing that the system that works with words is identical to the system that works with notes and phrases.
+And so that's all the material I have pre-prepared.
+So now we've got to throw it open to conversation.
+Yeah, I've got a question.
+If you have multimodal inputs, doesn't the brain use theta waves as sort of like a join?
+Here's what I think.
+And to which I think the answer is no.
+I think that as you get sound coming in, it is pouring in through one path into your internal mental model.
+So in your internal mental model, you can hear a car approaching behind you, and you know it's a car approaching behind you without looking.
+And with your vision system, you can see a dog in front of you, and you can put that in your mental model.
+And it's your mental model that merges everything by perceived position.
+That's what my contention is, and we'll see how that pans out as the development continues.
+But when animals are dreaming, they replay the theta rhythms.
+And see, I believe all of these rhythms are artifacts of the way your brain works.
+They are not the cause of the way your brain works.
+And I got that impression from having done a lot of electroencephalograph design and development.
+And the waves that you see on any kind of graph are so far divorced from the fires of individual synapses.
+They're this aggregation.
+And so I can easily imagine that the searching process in sound creates one apparent set of waves.
+And the searching in visual shapes creates another apparent set of waves.
+And these in aggregate create some kind of apparent wave.
+But it's the processes at a very low level and individual neuron firings that are doing the work.
+And I had a conversation about modern EG right now.
+And even now, where for lots of brain issues, they simply cut a hole in your skull and place an electrode array right on the surface of your brain.
+But even at that level, each electrode array is aggregating the signals of somewhere between a hundred and a thousand neurons.
+And so our ability to do anything useful with the firing of individual neurons and synapses is still beyond the scope of what we can do.
+The process has moved forward so much in the last decades that we should be able to expect to see the firings of individual synapses here in the not-too-distant future.
+But we're not there yet.
+And so I can easily imagine that some combination of neuron firings that follow some thought creates some wave that looks as though it aggregates through your brain.
+But in my humble opinion, it is the individual neuron firings of the neuron clusters that represent these thoughts that is the key.
+And the wave is an aggregate artifact that we can recognize.
+Does that make any sense, Sean?
+I don't know.
+If there was a way to measure the saline and, like, basically just the salt levels inside between every neuron, the electro-saline solution, you could get a pretty good estimate.
+If you could measure the direct in between every neuron with a super high-res MRI, if you could measure the chemicals in between every neuron instead of the neurons themselves, you could probably estimate it.
+But here's something that is also very interesting, that if you give, and this is a common test for deafness, for example, is that if you give somebody repeated clicks at a specific time and you average the signal,
+then you can see the firings of the signals related to the firings of individual neurons because all of the other stuff will aggregate out.
+And you can see individual firings for individual signals, but only in the case of you can synchronize with a specific input that you know is going to have a significant impact.
+Of course, yeah.
+But you can do that, and that's a test for deafness to determine if the source of deafness is neurological or some mechanical defect in the ear itself.
+It sounds like there's some backwards work there that can be done to read a lot more, like mapping individual brains first.
+Absolutely.
+And I am not a biologist neuroscientist, and I can only assume that looking at individual neurons in a brain is vastly more difficult than we might think at first blush.
+Because if it were as obvious as it would seem that you could put a microelectrode into an individual neuron and see what was going on and then just have this array of a billion or even a hundred or a thousand of these itty-bitty electrodes.
+If that was the case, it would have already been done.
+So it must be vastly more complicated than it appears.
+Well, isn't the bulk of the neural matter connections between the neurons?
+I mean, isn't that sort of you have the cortex, and then underneath that's the gray matter, and isn't there like white matter underneath, which is-
+Here's the deal.
+There are a couple of layers of skin membranes on the surface of your brain that do her matter, but once you get beneath that, you are looking right at neurons.
+And the gray matter is at the surface, and those are neurons, and they are in about seven layers at the top surface, the outer surface of your neocortex.
+And beyond those seven layers, everything inside your brain is axons going from one set of neurons to another.
+So, I mean, to put this in context of a data center, in other words, if you're connecting a rack to another rack, you get a cross connect.
+Essentially, what this is saying is that the data center would be a few racks and a lot of cross connects if it was equivalent to the brain.
+No, I would disagree with that.
+It is that the axons in the white matter are quite large relative to the neurons, so they take up a lot of volume.
+Okay, so it's a sizing issue, not a quantity issue.
+Size is why, because they're bigger, it requires more space.
+It's not okay.
+Yes, and one of the reasons is that the white matter connections are what is called myelinated, and that makes them conduct signals vastly faster.
+But that's only done for the longer signals because the myelination takes up so much more space.
+So, all of the signals in the white matter are going a considerable distance, neuron-wise.
+So, how would you integrate that sort of cross connect model into your linked list concept?
+Ah, I would contend that the linked list is much more of a local phenomenon, that in one area of your brain you'll store all of your letters, and you'll store lots and lots of sequences that relate to those letters, because your brain wants to make short connections whenever it can.
+And you've got to have long connections where I say Fido was a dog, because those things really don't relate to each other until I make that mental connection.
+And so, and certainly your concept of Fido is relating not only how Fido looks, but how Fido sounds.
+And so, those things are clearly going to be coming from different areas of your brain, and that's where you can't avoid having long connections.
+Right, it's a small world model.
+Exactly.
+I mean, biologically your brain isn't stupid, it tries to do it the easy way.
+Well, it almost seems like the fact that it's so slow might be an advantage, because the, you know, if you think about timing on machines, you know, if you're off by a couple of clocks, you know, things could go wrong easily.
+But if it's slow, it seems like the percentage, you know, it seems like there's a fudge factor there.
+Absolutely.
+And, of course, a huge distinction between a computer and your brain is that all modern computers are built synchronously, and they have a clock, and everybody has to be in lockstep with the clock, where your brain is completely asynchronous, and it relies on a signal getting from one place to another to trigger the next thing that happens.
+So, it's an entirely different mindset, and you could design computers that work this way, where this instruction happens after that instruction is completed, and you don't know in advance when that next instruction is going to happen, and you certainly run into that in places like you're talking to your graphics board, and you send out some processing request to the graphics board, and you simply have to
+wait an indeterminate amount of time until it says it's done.
+Right.
+So, that's what, and your brain has to do that on everything that it does.
+Yeah, but it doesn't pause and wait.
+The brain doesn't pause and wait.
+No.
+So, in other words, going back to the FPGA, you have SRAM and you have DDR.
+The computer isn't either, it's just its limitation, right?
+The computer isn't either.
+The SRAM, yeah, the SRAM, you can access that at one clock.
+The DDR is indeterminate.
+In other words, it can take 40 clocks or 60 clocks.
+And so, what you have, the digital circuit does, is it says, okay, I'm going to wait for a handshake from the DDR.
+And so, what it's doing is, is that it's receiving these clocks, and it's waiting, and it's not doing anything until it gets a high signal from the RAM.
+Right.
+And the difference in the brain is that there's no clock.
+You're not waiting.
+Well, that's what I'm saying, is the brain, it never waits.
+It can't wait.
+But there's multiple neurofrequencies of neurons, right?
+They are buzzing at different frequencies.
+Are they not clocks themselves, then, checking each other?
+You could look at it that way, but I think you're much better looking at it that the neuron puts out its signal, and it arrives some indeterminate amount of time later at its destination, and then the destination does its thing.
+And the amount of time that has elapsed between the source and the destination, you just, the brain is unaware of it.
+It only does, it only processes what it gets at the destination when it gets it.
+It's classic.
+I mean, the brain is basically an analog computer.
+In that respect, in the timing respect, certainly.
+With timing respect, but also how it had processes signals as well.
+I mean, a lot of analog probe, a lot of analog computers are highly paralyzed.
+Yeah, well, you know, I'm so old that as an undergraduate, we had analog computers in the lab, and to some extent, they're like magic.
+You set up a set of connections that represent a differential equation, and the solution to the differential equation appears on the screen, because it's the only possible way the circuit can run.
+And it's really magic, and it is essentially instant.
+I mean, they're not exact analogies, because, yeah, it's the voltage.
+Right.
+The Russians are brilliant at analog computing.
+They're absolutely amazing at it.
+Still now.
+Mm-hmm.
+Now...
+Could those microtubules be what's checking time?
+That is one theory.
+I'm just looking at a cross-section, because like, you know, your nucleus and everything.
+It's really hard to say that that does any level of that.
+But, I mean, there's an organelle in there that does something.
+Well, that was the contention of...
+What's his name?
+The Emperor's New Mind guy, Roger Penrose.
+Yeah, I don't want to go into the quantum level of vibrating tubes, but they're there for something, right?
+Yeah, and the problem that we have in looking at neurons and modeling neurons is that all biological cells are immensely complicated, and neurons are no exception, and they are immensely complicated.
+And we just really don't know which of the features of neurons contribute to thinking and which are there for non-thinking purposes.
+But we can take out a bunch that are in every other cell, right?
+Yeah.
+To just, like, and look at the differences.
+Like, that's what we'd do if we were backwards engineering.
+Right.
+And so we have the leaky integrating fire model, and that's a wonderful simplification.
+And then we've figured out that, well, that actually happens in individual dendrites rather than only in the cell as a whole.
+So we have to rethink our model so that it can handle this dendritic processing as well, that we have...
+So we have to evolve the model as we learn more about it.
+We learn what, you know, we learn what it is that the neuron is generally doing, and then we update the model.
+But I think my model of the atomic thought, which has these links, is at a high enough level of abstraction that it will encompass almost everything we find out about the way biological neurons actually run.
+So I might get tripped.
+Would you kindly put up your diagram of the thought?
+I arrived a little bit late, and I missed that particular slide.
+I didn't have a slide of thoughts.
+I have a slide of sequences.
+But I just glossed over thoughts with the explanation that I'm going to cover that in more detail in the next conversation.
+How do you think you're going to handle multiple languages?
+That's the question I'm curious about.
+Because, like, languages expands.
+I got no problem with multiple languages.
+Okay.
+Because...
+Here's the deal.
+Where I say Fido is a dog, do not be confused that there is any relation to the words.
+And I put labels on there just so we can refer to them, but there has to be a relationship type, let's say, means.
+And then you have the word Fido, and Fido means this abstract thought.
+And this abstract thought can be expressed as Fido.
+So we have these relationships that isolate words from the abstract meanings.
+Now I can have any number of different words that reference the abstract Fido.
+And so I can have all of these different synonyms.
+And likewise, I can have this set of words, then I can say this is an English language word.
+And this set of words have the property, this is a French word.
+And all of these different words can be expressing the same abstract thought.
+And then when that abstract thought fires, you can decide what language you're thinking in, and it all pops back out again.
+But how do you handle things like his and her, which doesn't exist in English, but exists in other languages?
+No, genitives exist in English.
+Not in the same way they do in other languages?
+Well, the expression is different, but the concept itself, the abstract concept is the same.
+Now, I'm currently working on that by building essentially the pieces of an LLM in the neuron model.
+In addition to the individual words, you have to have this large library of likely phrases.
+Because most of what you say is idiomatic.
+The words are not to be taken literally.
+And you have to be able to work.
+So essentially, I will get the words about FIDO in French or in English.
+And then I'll go to the French practical phrases, common phrases, and spew those words into those common phrases.
+We'll see how that works.
+Sorry.
+One interesting thing to know is that it seems like this data structure that you've come up with is very similar to the scripts and frames proposed by Marvin Minsky.
+So were you inspired by that at all?
+I think this would be a parallel evolution question rather than an inspiration because I read the Minsky stuff so long ago that it would have to be lurking in my subconscious.
+Because if I have done it, I'm not aware of it.
+I have to say this is a non-near, as a computer's coder.
+It's a fairly logical structure anyway, which I've used multiple times.
+I mean, it's a linked list pointing to more linked lists pointing to maybe an entity.
+Right.
+Conceptually, I don't think there's anything radical in the structure.
+I talked to somebody else about it, and he said, well, you obviously took these ideas from Lisp.
+But unfortunately, it was 40 years ago I wrote one program in Lisp.
+I don't know enough about it.
+I don't recall enough about it to have taken advantage.
+But the idea that the only way to store a series of information or a sequence of bits of information in neurons is via a linked list structure, I see that as unavoidable, that there's no other way to do it.
+I've got a question because I'm looking at this from a I'm trying to do it for the audio.
+So I'm breaking it down and marrying how the audio system of the auditory system works with that.
+I've gone down a very deep rabbit hole.
+What I'm learning is just unbelievable.
+Anyway, the question I keep on.
+I came to a similar conclusion about storing sequences like you've come to.
+Yeah.
+The one thing I keep on coming back to you, though, is I don't know how to do this is if you're listening to a piece of music, you've got effectively the notes.
+Yeah.
+But then people can then also define who's playing a piece of music.
+So if one's doing a solo flute.
+Mm hmm.
+How would you reference?
+There's two questions I've really got is a what's the mineral sort of storage secrets length?
+How have you come to about?
+You said seven to ten.
+But also, because I keep on coming onto the ideas, you've effectively got top level sequence.
+And then a sort of overlay sequence of more detail.
+Things like the timbre of how someone plays a certain sequence.
+Does that am I making sense?
+Yes.
+And the way I think about that, and I wrote this in the program, and it's a shame it didn't work.
+You know, you can download this on at the Brain Sim Thought Project and give it a try.
+Yeah.
+And the module of interest is something called module sound.
+And what I did was I recognized that when you are expressing the sequence of notes, there are a whole lot of parameters that you might want to add to that.
+And the parameters that I wrote into the demo are to be able to change the cadence and to be able to offset the pitch.
+You could also change the volume.
+You could change the volume of individual notes to create accents and other things like that.
+And because I've got this general linkage, because of the general linkage, you can hook up pictures of the concert hall that you remember when you heard that piece of music.
+I've got no problem in linking anything to anything.
+Yeah.
+Yeah.
+My problem is I'm not thinking at notes.
+So I'm thinking actually the individual frequency representation of how it actually goes through the auditory nerve system.
+Yeah.
+And how that goes up into the auditory.
+Without anyone who doesn't know any of this.
+Yeah.
+And I certainly agree that you've got to go there at some level.
+Yeah.
+But I wanted to demonstrate the sequence in MIDI.
+No.
+And it only has notes.
+Yeah.
+Yeah.
+I mean, I've gone down a rabbit hole and I really don't have the time for it.
+This is why I'm slow.
+But yeah, what I'm trying to, what I'm trying, the thing that I'm trying to do is back to the recall is back up to the audio cortex.
+Is everything is basically starting patterns in the audio cortex because everything below it is a lot more automatic, shall we say?
+Or at least it appears to be as much as we know, because there's really a lot we do really know.
+So once it gets into the audio cortex, then it's all, I'm convinced that the sequencing is all stored in there.
+And that marries with everything we've said about, you know, everything else on that layer.
+And also looking at the bird analogies, they've got a similar thing, haven't they?
+So what I'm trying to work out, though, is how, at very resolution, is that how do you, how do you capture sequence?
+So like a piece of music, how do you come in halfway through, say, Brahms or Mozart or something like that?
+How do you attach at that point?
+Yeah.
+But what I think what you've come up to is you keep your sequences short and just sort of do pattern matching at that point.
+Yeah.
+But the problem I have there is, is you've got several layers of pattern matching because you might be, you might come in at a repeating sequence.
+Not that's what we call learning and skills.
+So you might know music.
+And that's why you've built lots of sequences.
+Those sequences are you.
+So.
+No, no.
+You listen to a pop song.
+You listen to, I don't know.
+I know, but a lot of people can't pick out that stuff.
+You have to have trained the brain on that data.
+No, no, no.
+So you're training it and splitting that sequence up.
+Yeah.
+No, no.
+Yeah.
+But if you come in any sort of like a guitar riff or something like that, which is part of a much wider piece, you might come in at that point, but you know the guitar riff, you've got to jump into that.
+Exactly.
+And that's why I put the first pointers on everything because the pattern match algorithm will match any location in the pattern.
+Now, at the moment, it only does exact matches.
+And we know that your brain can do erroneous matches.
+That is, it does matches with errors and it's perfectly happy doing that.
+And it also is very sloppy about the order of things that you can read words.
+And if the individual letters inside the words are out of order, your brain doesn't seem to even notice.
+That's what you've practiced.
+Yeah, exactly.
+Before we wrap up, I noticed that David's had his hand up for a while and he's been well behaved about it.
+So I just wanted to call out David to see if you had a question you wanted to participate with.
+Hi all.
+Yeah, great videos, I would say, and I watch you a lot of months right now.
+And one thing that I think, like, I'm interested most is that what about things that not get inputted inside the brain.
+And what I mean is like, what about imagination or like, maybe like dreaming or some sort of like, yeah, like if, if you input the data into the brain, you can retrieve it.
+Right.
+Right.
+But what about like those scenarios where, when we just like create something new, right?
+Because LLMs also like have huge, like, disadvantage behind like human beings that can't, almost can't never, like never can create something new.
+Right.
+But yeah.
+Yeah.
+Yeah.
+What about.
+First, um, I, I have a contention that, that your brain builds a mental model and everything gets pushed in through your mental model.
+And, um, things that are important get saved and well, everything gets saved and things that are unimportant get deleted and, or, and forgotten.
+And the way that, um, your mental model is also the place where information is retrieved and, uh, um, my, that's my contention.
+And, and, and I know Michael would say, well, those are different spaces and I don't, I don't have any big objection to that, but my, the, the key is, is that all of this memory is just sitting in your brain.
+Doing nothing and using no, no, uh, no energy until you access it and you access it by creating pointers to information from this mental model.
+And the mental model then causes things to fire that you can think that way, uh, think about.
+So, um, the process of creativity, I would contend is, uh, your ability to deliberately put together things that haven't, you haven't put together before.
+And it's a mix and match kind of an operation and the key that, that I don't have any knowledge of how you might, how this might work eventually.
+But the key is that, you know, what's useful to save because obviously you can put together random thoughts pretty easily, but figuring out, well, that random thought pair seems like it was useful.
+Let's pursue that and do something with it. And that's really a, I think a fascinating, um, topic for another time.
+Um, okay. Well, I want to thank you all. This, I think has been a really useful conversation for me and I hope you got something out of it.
+Um, we'll keep in touch. I hope to have a video out about this material in the not too distant future. So you'll be able to, uh, um, try out the audio.
+In fact, maybe I should just do the audio on its own because, uh, um, that the videos are very time consuming to produce and, and the shorter they are, the easier they are.
+So if I did just this, the sound that might be helpful, I want to thank you.
+If anybody has any suggestions or, or comments, be, be sure to, to write me or post it on discord or something else.
+That's great. I sure appreciate it. And I thank you very much.
+Bye-bye.
+Good night.
+Cheers. Good talk.
+Bye-bye.
