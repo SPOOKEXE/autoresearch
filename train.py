@@ -452,7 +452,7 @@ DEVICE_BATCH_SIZE = 16  # per-device batch size (reduce if OOM)
 # Checkpointing (modern approach: state_dict only; do not use torch.utils.serialization)
 CHECKPOINT_DIR = "checkpoints"
 CHECKPOINT_PATH = os.path.join(CHECKPOINT_DIR, "model_weights.pth")
-RESUME_FROM_CHECKPOINT = True  # if True and checkpoint exists, load weights and continue
+RESUME_FROM_CHECKPOINT = False  # if True and checkpoint exists, load weights and continue
 
 # ---------------------------------------------------------------------------
 # Setup: tokenizer, model, optimizer, dataloader
@@ -487,7 +487,10 @@ with torch.device("meta"):
     model = GPT(config)
 model.to_empty(device=device)
 if RESUME_FROM_CHECKPOINT and os.path.isfile(CHECKPOINT_PATH):
-    model.load_state_dict(torch.load(CHECKPOINT_PATH, map_location=device, weights_only=True))
+    state = torch.load(CHECKPOINT_PATH, map_location=device, weights_only=True)
+    if any(k.startswith("_orig_mod.") for k in state):
+        state = {k.replace("_orig_mod.", "", 1): v for k, v in state.items()}
+    model.load_state_dict(state, strict=True)
     print(f"Resumed from {CHECKPOINT_PATH}")
 else:
     model.init_weights()
