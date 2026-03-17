@@ -4,16 +4,13 @@ This is an experiment to have the LLM do its own research.
 
 I will provide you some topics and information to investigate, and you see what you want to apply and experiment with.
 
-Review the documents in docs/ and focus on the "sequence representation of information" and a "graph network".
-I want the model to integrate these in a hierarchical latent space that substrates based on context via sequences (e.g. MIT described that models squash everything into their latent space in superposition and could benefit from hierarchy).
-
 Predict what you will need immediately for requirements as during the research loop you cannot ask the user.
 
 ## Setup
 
 To set up a new experiment, work with the user to:
 
-1. **Agree on a run tag**: propose a tag based on today's date (e.g. `mar5`). The branch `autoresearch/<tag>` must not already exist — this is a fresh run.
+1. **Agree on a run tag**: propose a tag based on today's date (e.g. `mar18`). The branch `autoresearch/<tag>` must not already exist — this is a fresh run.
 2. **Create the branch**: `git checkout -b autoresearch/<tag>` from current master.
 3. **Read the in-scope files**: The repo is small. Read these files for full context:
    - `README.md` — repository context.
@@ -96,13 +93,13 @@ d4e5f6g	0.000000	0.0	crash	double model width (OOM)
 
 ## The experiment loop
 
-The experiment runs on a dedicated branch (e.g. `autoresearch/mar5` or `autoresearch/mar5-gpu0`).
+The experiment runs on a dedicated branch (e.g. `autoresearch/mar18`).
 
 LOOP FOREVER:
 
 1. Look at the git state: the current branch/commit we're on
-2. Tune `train.py` with an experimental idea by directly hacking the code.
-3. git commit
+2. Tune `train.py` with an experimental idea by directly hacking the code. You can edit small, or make larger changes to implement the user's idea.
+3. git commit relevent code.
 4. Run the experiment: `uv run train.py > run.log 2>&1` (redirect everything — do NOT use tee or let output flood your context)
 5. Read out the results: `grep "^val_bpb:\|^peak_vram_mb:" run.log`
 6. If the grep output is empty, the run crashed. Run `tail -n 50 run.log` to read the Python stack trace and attempt a fix. If you can't get things to work after more than a few attempts, give up.
