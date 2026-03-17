@@ -6,6 +6,10 @@ I will provide you some topics and information to investigate, and you see what 
 
 Predict what you will need immediately for requirements as during the research loop you cannot ask the user.
 
+If you are working on a PLAN.md implementation, do 10-20 experiments per plan item before implementing the next.
+Always assume your first few experiments for a implementation may not be great, and that you need to tune the hyperparameters,
+to see if it is actually beneficial or not.
+
 ## Setup
 
 To set up a new experiment, work with the user to:
