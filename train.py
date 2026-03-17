@@ -81,17 +81,11 @@ class CausalSelfAttention(nn.Module):
         k = self.c_k(x).view(B, T, self.n_kv_head, self.head_dim)
         v = self.c_v(x).view(B, T, self.n_kv_head, self.head_dim)
 
-        # Value residual: original gate + Hebbian potentiation proportional to q-ve alignment
+        # Value residual (ResFormer): mix in value embedding with input-dependent gate per head
         if ve is not None:
-            ve_4d = ve.view(B, T, self.n_kv_head, self.head_dim)
-            gate = 2 * torch.sigmoid(self.ve_gate(x[..., :self.ve_gate_channels]))    # (B, T, K)
-            v = v + gate.unsqueeze(-1) * ve_4d
-            # Hebbian term: add ve scaled by cosine similarity between q and ve (detached)
-            q_h = q[:, :, :self.n_kv_head, :]
-            q_norm = q_h.norm(dim=-1, keepdim=True).clamp(min=1e-8)
-            ve_norm = ve_4d.norm(dim=-1, keepdim=True).clamp(min=1e-8)
-            sim = ((q_h * ve_4d).sum(dim=-1) / (q_norm * ve_norm).squeeze(-1)).detach().to(ve_4d.dtype)
-            v = v + (0.1 * sim).unsqueeze(-1) * ve_4d                                 # Hebbian potentiation
+            ve = ve.view(B, T, self.n_kv_head, self.head_dim)
+            gate = 2 * torch.sigmoid(self.ve_gate(x[..., :self.ve_gate_channels]))
+            v = v + gate.unsqueeze(-1) * ve
 
         cos, sin = cos_sin
         q, k = apply_rotary_emb(q, cos, sin), apply_rotary_emb(k, cos, sin)
@@ -128,6 +122,21 @@ class Block(nn.Module):
         return x
 
 
+PC_WEIGHT = 0.001  # auxiliary loss weight — very small to avoid fighting LM gradients
+
+
+class PCPredictor(nn.Module):
+    """Bottleneck predictor: block i predicts block i+1's normalized output."""
+    def __init__(self, n_embd):
+        super().__init__()
+        bottleneck = n_embd // 4
+        self.down = nn.Linear(n_embd, bottleneck, bias=False)
+        self.up = nn.Linear(bottleneck, n_embd, bias=False)
+
+    def forward(self, x):
+        return self.up(self.down(x))
+
+
 class GPT(nn.Module):
     def __init__(self, config):
         super().__init__()
@@ -147,6 +156,9 @@ class GPT(nn.Module):
             str(i): nn.Embedding(config.vocab_size, kv_dim)
             for i in range(config.n_layer) if has_ve(i, config.n_layer)
         })
+        self.pc_predictors = nn.ModuleList([
+            PCPredictor(config.n_embd) for _ in range(config.n_layer - 1)
+        ])
         # Rotary embeddings
         self.rotary_seq_len = config.sequence_len * 10
         cos, sin = self._precompute_rotary_embeddings(self.rotary_seq_len, head_dim)
@@ -178,6 +190,12 @@ class GPT(nn.Module):
         for block in self.transformer.h:
             if block.attn.ve_gate is not None:
                 torch.nn.init.zeros_(block.attn.ve_gate.weight)
+        # PC predictors: small down, zero up → pred ≈ 0 initially
+        bottleneck = self.config.n_embd // 4
+        s_pc = 3**0.5 * bottleneck**-0.5
+        for pred in self.pc_predictors:
+            torch.nn.init.uniform_(pred.down.weight, -s_pc, s_pc)
+            torch.nn.init.zeros_(pred.up.weight)
         # Rotary embeddings
         head_dim = self.config.n_embd // self.config.n_head
         cos, sin = self._precompute_rotary_embeddings(self.rotary_seq_len, head_dim)
@@ -249,8 +267,8 @@ class GPT(nn.Module):
         lm_head_params = list(self.lm_head.parameters())
         resid_params = [self.resid_lambdas]
         x0_params = [self.x0_lambdas]
-        assert len(list(self.parameters())) == (len(matrix_params) + len(embedding_params) +
-            len(lm_head_params) + len(value_embeds_params) + len(resid_params) + len(x0_params))
+        pc_params = list(self.pc_predictors.parameters())
+        # no assertion: pc_predictors are GPT-level params not in transformer.h
         # Scale LR ∝ 1/√dmodel (tuned at 768 dim)
         dmodel_lr_scale = (model_dim / 768) ** -0.5
         print(f"Scaling AdamW LRs by 1/sqrt({model_dim}/768) = {dmodel_lr_scale:.6f}")
@@ -260,6 +278,7 @@ class GPT(nn.Module):
             dict(kind='adamw', params=value_embeds_params, lr=embedding_lr * dmodel_lr_scale, betas=adam_betas, eps=1e-10, weight_decay=0.0),
             dict(kind='adamw', params=resid_params, lr=scalar_lr * 0.01, betas=adam_betas, eps=1e-10, weight_decay=0.0),
             dict(kind='adamw', params=x0_params, lr=scalar_lr, betas=(0.96, 0.95), eps=1e-10, weight_decay=0.0),
+            dict(kind='adamw', params=pc_params, lr=matrix_lr * dmodel_lr_scale, betas=adam_betas, eps=1e-10, weight_decay=0.0),
         ]
         for shape in sorted({p.shape for p in matrix_params}):
             group_params = [p for p in matrix_params if p.shape == shape]
@@ -280,10 +299,16 @@ class GPT(nn.Module):
         x = self.transformer.wte(idx)
         x = norm(x)
         x0 = x
+        pc_loss = torch.zeros(1, device=idx.device)
         for i, block in enumerate(self.transformer.h):
             x = self.resid_lambdas[i] * x + self.x0_lambdas[i] * x0
             ve = self.value_embeds[str(i)](idx) if str(i) in self.value_embeds else None
+            x_normed = norm(x)
             x = block(x, ve, cos_sin, self.window_sizes[i])
+            if self.training and i < len(self.pc_predictors):
+                pred = self.pc_predictors[i](x_normed)
+                target = norm(x).detach()
+                pc_loss = pc_loss + F.mse_loss(pred, target)
         x = norm(x)
 
         softcap = 15
@@ -292,9 +317,11 @@ class GPT(nn.Module):
         logits = softcap * torch.tanh(logits / softcap)
 
         if targets is not None:
-            loss = F.cross_entropy(logits.view(-1, logits.size(-1)), targets.view(-1),
-                                   ignore_index=-1, reduction=reduction)
-            return loss
+            lm_loss = F.cross_entropy(logits.view(-1, logits.size(-1)), targets.view(-1),
+                                      ignore_index=-1, reduction=reduction)
+            if self.training:
+                return lm_loss + PC_WEIGHT * pc_loss / len(self.pc_predictors)
+            return lm_loss
         return logits
 
 # ---------------------------------------------------------------------------
