@@ -87,7 +87,8 @@ class CausalSelfAttention(nn.Module):
             q_h = q[:, :, :self.n_kv_head, :]                                         # (B, T, K, D)
             q_norm = q_h.norm(dim=-1, keepdim=True).clamp(min=1e-8)
             ve_norm = ve_4d.norm(dim=-1, keepdim=True).clamp(min=1e-8)
-            sim = (q_h * ve_4d).sum(dim=-1) / (q_norm * ve_norm).squeeze(-1)          # (B, T, K)
+            # detach: sim is a routing signal only, no gradient back through q/ve
+            sim = ((q_h * ve_4d).sum(dim=-1) / (q_norm * ve_norm).squeeze(-1)).detach()  # (B, T, K)
             gate_input = torch.cat([x[..., :self.ve_gate_channels], sim], dim=-1)     # (B, T, 32+K)
             gate = 2 * torch.sigmoid(self.ve_gate(gate_input))                        # (B, T, K)
             v = v + gate.unsqueeze(-1) * ve_4d
