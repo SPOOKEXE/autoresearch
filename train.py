@@ -462,6 +462,12 @@ CHECKPOINT_DIR = "checkpoints"
 CHECKPOINT_PATH = os.path.join(CHECKPOINT_DIR, "model_weights.pth")
 RESUME_FROM_CHECKPOINT = False  # set False when ve_gate weight shape changed
 
+# Metaplastic modulation: surprise-based gradient scaling
+META_EMA_ALPHA = 0.98    # EMA decay for expected loss
+META_MMIN = 0.7          # min gradient scale
+META_MMAX = 1.4          # max gradient scale
+META_WARMUP = 100        # steps before activation
+
 # ---------------------------------------------------------------------------
 # Setup: tokenizer, model, optimizer, dataloader
 # ---------------------------------------------------------------------------
@@ -555,6 +561,8 @@ t_start_training = time.time()
 smooth_train_loss = 0
 total_training_time = 0
 step = 0
+meta_ema = None   # EMA of training loss
+meta_scale = 1.0  # current gradient scale
 
 while True:
     torch.cuda.synchronize()
@@ -563,8 +571,7 @@ while True:
         with autocast_ctx:
             loss = model(x, y)
         train_loss = loss.detach()
-        loss = loss / grad_accum_steps
-        loss.backward()
+        (loss * meta_scale / grad_accum_steps).backward()
         x, y, epoch = next(train_loader)
 
     # Progress and schedules
@@ -581,6 +588,14 @@ while True:
     model.zero_grad(set_to_none=True)
 
     train_loss_f = train_loss.item()
+
+    # Metaplastic modulation: update EMA, compute next step's scale
+    if meta_ema is None:
+        meta_ema = train_loss_f
+    elif step >= META_WARMUP:
+        surprise = train_loss_f / (meta_ema + 1e-8)
+        meta_scale = max(META_MMIN, min(META_MMAX, surprise))
+    meta_ema = META_EMA_ALPHA * meta_ema + (1 - META_EMA_ALPHA) * train_loss_f
 
     # Fast fail: abort if loss is exploding or NaN
     if math.isnan(train_loss_f) or train_loss_f > 100:
