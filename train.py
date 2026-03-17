@@ -81,16 +81,17 @@ class CausalSelfAttention(nn.Module):
         k = self.c_k(x).view(B, T, self.n_kv_head, self.head_dim)
         v = self.c_v(x).view(B, T, self.n_kv_head, self.head_dim)
 
-        # Value residual: Hebbian modulation of the learned gate via cosine similarity
+        # Value residual: original gate + Hebbian potentiation proportional to q-ve alignment
         if ve is not None:
             ve_4d = ve.view(B, T, self.n_kv_head, self.head_dim)
-            q_h = q[:, :, :self.n_kv_head, :]                                         # (B, T, K, D)
+            gate = 2 * torch.sigmoid(self.ve_gate(x[..., :self.ve_gate_channels]))    # (B, T, K)
+            v = v + gate.unsqueeze(-1) * ve_4d
+            # Hebbian term: add ve scaled by cosine similarity between q and ve (detached)
+            q_h = q[:, :, :self.n_kv_head, :]
             q_norm = q_h.norm(dim=-1, keepdim=True).clamp(min=1e-8)
             ve_norm = ve_4d.norm(dim=-1, keepdim=True).clamp(min=1e-8)
-            gate = 2 * torch.sigmoid(self.ve_gate(x[..., :self.ve_gate_channels]))    # (B, T, K)
-            sim = ((q_h * ve_4d).sum(dim=-1) / (q_norm * ve_norm).squeeze(-1)).detach().to(gate.dtype)
-            gate = gate * (1.0 + 0.5 * sim)                                           # Hebbian boost/suppress
-            v = v + gate.unsqueeze(-1) * ve_4d
+            sim = ((q_h * ve_4d).sum(dim=-1) / (q_norm * ve_norm).squeeze(-1)).detach().to(ve_4d.dtype)
+            v = v + (0.25 * sim).unsqueeze(-1) * ve_4d                                # Hebbian potentiation
 
         cos, sin = cos_sin
         q, k = apply_rotary_emb(q, cos, sin), apply_rotary_emb(k, cos, sin)
