@@ -91,7 +91,7 @@ class CausalSelfAttention(nn.Module):
             q_norm = q_h.norm(dim=-1, keepdim=True).clamp(min=1e-8)
             ve_norm = ve_4d.norm(dim=-1, keepdim=True).clamp(min=1e-8)
             sim = ((q_h * ve_4d).sum(dim=-1) / (q_norm * ve_norm).squeeze(-1)).detach().to(ve_4d.dtype)
-            v = v + (0.5 * sim).unsqueeze(-1) * ve_4d                                 # Hebbian potentiation
+            v = v + (0.1 * sim).unsqueeze(-1) * ve_4d                                 # Hebbian potentiation
 
         cos, sin = cos_sin
         q, k = apply_rotary_emb(q, cos, sin), apply_rotary_emb(k, cos, sin)
