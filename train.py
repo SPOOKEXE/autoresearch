@@ -72,7 +72,8 @@ class CausalSelfAttention(nn.Module):
         self.c_v = nn.Linear(self.n_embd, self.n_kv_head * self.head_dim, bias=False)
         self.c_proj = nn.Linear(self.n_embd, self.n_embd, bias=False)
         self.ve_gate_channels = 32
-        self.ve_gate = nn.Linear(self.ve_gate_channels, self.n_kv_head, bias=False) if has_ve(layer_idx, config.n_layer) else None
+        # Hebbian gate: input augmented with per-head cosine similarity (query vs value embedding)
+        self.ve_gate = nn.Linear(self.ve_gate_channels + self.n_kv_head, self.n_kv_head, bias=False) if has_ve(layer_idx, config.n_layer) else None
 
     def forward(self, x, ve, cos_sin, window_size):
         B, T, C = x.size()
@@ -80,11 +81,16 @@ class CausalSelfAttention(nn.Module):
         k = self.c_k(x).view(B, T, self.n_kv_head, self.head_dim)
         v = self.c_v(x).view(B, T, self.n_kv_head, self.head_dim)
 
-        # Value residual (ResFormer): mix in value embedding with input-dependent gate per head
+        # Value residual (ResFormer): Hebbian gate — opens when query resonates with value embedding
         if ve is not None:
-            ve = ve.view(B, T, self.n_kv_head, self.head_dim)
-            gate = 2 * torch.sigmoid(self.ve_gate(x[..., :self.ve_gate_channels]))
-            v = v + gate.unsqueeze(-1) * ve
+            ve_4d = ve.view(B, T, self.n_kv_head, self.head_dim)
+            q_h = q[:, :, :self.n_kv_head, :]                                         # (B, T, K, D)
+            q_norm = q_h.norm(dim=-1, keepdim=True).clamp(min=1e-8)
+            ve_norm = ve_4d.norm(dim=-1, keepdim=True).clamp(min=1e-8)
+            sim = (q_h * ve_4d).sum(dim=-1) / (q_norm * ve_norm).squeeze(-1)          # (B, T, K)
+            gate_input = torch.cat([x[..., :self.ve_gate_channels], sim], dim=-1)     # (B, T, 32+K)
+            gate = 2 * torch.sigmoid(self.ve_gate(gate_input))                        # (B, T, K)
+            v = v + gate.unsqueeze(-1) * ve_4d
 
         cos, sin = cos_sin
         q, k = apply_rotary_emb(q, cos, sin), apply_rotary_emb(k, cos, sin)
@@ -453,7 +459,7 @@ DEVICE_BATCH_SIZE = 16  # per-device batch size (reduce if OOM)
 # Checkpointing (modern approach: state_dict only; do not use torch.utils.serialization)
 CHECKPOINT_DIR = "checkpoints"
 CHECKPOINT_PATH = os.path.join(CHECKPOINT_DIR, "model_weights.pth")
-RESUME_FROM_CHECKPOINT = True  # if True and checkpoint exists, load weights and continue
+RESUME_FROM_CHECKPOINT = False  # set False when ve_gate weight shape changed
 
 # ---------------------------------------------------------------------------
 # Setup: tokenizer, model, optimizer, dataloader
