@@ -22,6 +22,16 @@ To set up a new experiment, work with the user to:
 
 Once you get confirmation, kick off the experimentation.
 
+## Tools
+
+You can:
+- Use all available tools at your disposal.
+- Search the internet for information.
+- Refer to GitHub codebases for code.
+- Refer to ArXiv Papers for implementations.
+- Use YouTube to search for information.
+And whatever you may see fit that fits the bounds of the experiment and rules in the Experimentation section.
+
 ## Experimentation
 
 Each experiment runs on a single GPU. The training script runs for a **fixed time budget of 5 minutes** (wall clock training time, excluding startup/compilation). You launch it simply as: `uv run train.py`.
