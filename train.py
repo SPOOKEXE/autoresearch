@@ -454,7 +454,7 @@ WARMDOWN_RATIO = 0.25   # fraction of time budget for LR warmdown
 FINAL_LR_FRAC = 0.0     # final LR as fraction of initial
 
 # Model size
-DEPTH = 8               # number of transformer layers
+DEPTH = 6               # number of transformer layers
 DEVICE_BATCH_SIZE = 16  # per-device batch size (reduce if OOM)
 
 # Checkpointing (modern approach: state_dict only; do not use torch.utils.serialization)
