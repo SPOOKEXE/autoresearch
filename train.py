@@ -81,17 +81,11 @@ class CausalSelfAttention(nn.Module):
         k = self.c_k(x).view(B, T, self.n_kv_head, self.head_dim)
         v = self.c_v(x).view(B, T, self.n_kv_head, self.head_dim)
 
-        # Value residual: original gate + Hebbian potentiation proportional to q-ve alignment
+        # Value residual (ResFormer): mix in value embedding with input-dependent gate per head
         if ve is not None:
-            ve_4d = ve.view(B, T, self.n_kv_head, self.head_dim)
-            gate = 2 * torch.sigmoid(self.ve_gate(x[..., :self.ve_gate_channels]))    # (B, T, K)
-            v = v + gate.unsqueeze(-1) * ve_4d
-            # Hebbian term: add ve scaled by cosine similarity between q and ve (detached)
-            q_h = q[:, :, :self.n_kv_head, :]
-            q_norm = q_h.norm(dim=-1, keepdim=True).clamp(min=1e-8)
-            ve_norm = ve_4d.norm(dim=-1, keepdim=True).clamp(min=1e-8)
-            sim = ((q_h * ve_4d).sum(dim=-1) / (q_norm * ve_norm).squeeze(-1)).detach().to(ve_4d.dtype)
-            v = v + (0.08 * sim).unsqueeze(-1) * ve_4d                                 # Hebbian potentiation
+            ve = ve.view(B, T, self.n_kv_head, self.head_dim)
+            gate = 2 * torch.sigmoid(self.ve_gate(x[..., :self.ve_gate_channels]))
+            v = v + gate.unsqueeze(-1) * ve
 
         cos, sin = cos_sin
         q, k = apply_rotary_emb(q, cos, sin), apply_rotary_emb(k, cos, sin)
